@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="TAAZ Marketing Agent - personal client task and content manager" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon-192.png" />
+  <title>TAAZ Marketing Agent</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--text:#111827;--muted:#667085;--line:#e5e7eb;--navy:#0f172a;--blue:#2563eb;--blue2:#eaf1ff;--red:#b42318;--redbg:#fee4e2;--green:#067647;--greenbg:#dcfae6;--amber:#b54708;--amberbg:#fef0c7;--shadow:0 10px 28px rgba(15,23,42,.07)}
+    *{box-sizing:border-box} html{background:var(--bg)} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    button,input,select,textarea{font:inherit} button{cursor:pointer} .hidden{display:none!important}
+    .shell{max-width:820px;margin:0 auto;min-height:100vh;padding-bottom:92px}.top{position:sticky;top:0;z-index:15;background:rgba(246,247,251,.96);backdrop-filter:blur(12px);padding:18px 16px 12px;border-bottom:1px solid rgba(229,231,235,.8)}
+    .brand{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand h1{font-size:20px;margin:0;font-weight:800;letter-spacing:-.3px}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px}.avatar{width:38px;height:38px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800}
+    .content{padding:16px}.hero{background:linear-gradient(140deg,#0f172a,#1e3a8a);color:#fff;border-radius:22px;padding:20px;box-shadow:var(--shadow)}.hero .date{opacity:.76;font-size:13px}.hero h2{font-size:25px;margin:5px 0 4px;letter-spacing:-.6px}.hero p{margin:0;opacity:.8;font-size:14px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+    .section{margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.section-head h3{font-size:16px;margin:0}.text-btn{border:0;background:transparent;color:var(--blue);font-weight:700;padding:8px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 3px 12px rgba(15,23,42,.035)}.taskrow{display:flex;gap:12px;align-items:flex-start}.check{width:24px;height:24px;border:2px solid #cbd5e1;border-radius:8px;background:#fff;flex:0 0 auto;margin-top:2px}.check.done{background:var(--green);border-color:var(--green);color:#fff}.grow{min-width:0;flex:1}.title{font-weight:760;font-size:14px;line-height:1.35}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;background:#f2f4f7;color:#475467;font-size:11px;font-weight:650}.pill.red{background:var(--redbg);color:var(--red)}.pill.green{background:var(--greenbg);color:var(--green)}.pill.amber{background:var(--amberbg);color:var(--amber)}.pill.blue{background:var(--blue2);color:#1d4ed8}
+    .quick{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:14px}.primary,.secondary,.danger{border:0;border-radius:14px;min-height:46px;padding:0 15px;font-weight:760}.primary{background:var(--blue);color:#fff}.secondary{background:#fff;color:var(--navy);border:1px solid var(--line)}.danger{background:var(--redbg);color:var(--red)}.mic{width:50px;padding:0;font-size:20px}
+    .nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(255,255,255,.97);border-top:1px solid var(--line);display:flex;justify-content:center;padding:7px max(8px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}.navinner{width:min(820px,100%);display:grid;grid-template-columns:repeat(5,1fr);gap:2px}.navbtn{border:0;background:transparent;border-radius:12px;padding:7px 3px;color:#667085;font-size:10px;font-weight:700;min-height:48px}.navbtn span{display:block;font-size:18px;line-height:20px;margin-bottom:2px}.navbtn.active{background:var(--blue2);color:#1d4ed8}
+    .page-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.page-title h2{font-size:22px;margin:0}.fab{border:0;background:var(--blue);color:#fff;border-radius:13px;min-height:42px;padding:0 14px;font-weight:750}
+    .filter{display:flex;gap:7px;overflow:auto;padding-bottom:4px;margin-bottom:12px}.filter button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;color:#475467;font-size:12px}.filter button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .client-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.client{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;min-height:120px}.client .initial{width:42px;height:42px;border-radius:13px;background:var(--blue2);display:grid;place-items:center;color:#1d4ed8;font-weight:850;margin-bottom:12px}.client b{font-size:14px}.client p{font-size:12px;color:var(--muted);margin:5px 0 0;line-height:1.35}
+    .empty{text-align:center;padding:30px 18px;color:var(--muted);background:#fff;border:1px dashed #d0d5dd;border-radius:18px}.empty b{display:block;color:#344054;margin-bottom:5px}
+    .modal{position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.56);display:flex;align-items:flex-end;justify-content:center}.sheet{background:#fff;width:min(820px,100%);max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}.sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.sheethead h3{margin:0;font-size:19px}.x{border:0;background:#f2f4f7;width:38px;height:38px;border-radius:11px;font-size:18px}.field{margin-bottom:12px}.field label{font-size:12px;color:#475467;font-weight:700;display:block;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;border:1px solid #d0d5dd;border-radius:12px;padding:12px;min-height:46px;background:#fff;color:var(--text);font-size:16px}.field textarea{min-height:88px;resize:vertical}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:9px;margin-top:16px}.actions button{flex:1}
+    .authwrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#dbeafe,transparent 38%),var(--bg)}.authcard{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow)}.authlogo{width:56px;height:56px;border-radius:18px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900;font-size:19px;margin-bottom:18px}.authcard h1{font-size:24px;margin:0 0 6px}.authcard p{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 18px}.authmsg{font-size:13px;border-radius:12px;padding:10px 12px;margin:10px 0;background:#f2f4f7;color:#475467}.switch{display:block;text-align:center;margin-top:14px;color:var(--blue);font-size:13px;font-weight:700;border:0;background:transparent;width:100%}
+    .settings-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:10px}.settings-card h3{margin:0 0 5px;font-size:15px}.settings-card p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.45}.brief{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;white-space:pre-wrap;font-size:13px;line-height:1.55}
+    .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#101828;color:#fff;padding:10px 14px;border-radius:12px;font-size:12px;z-index:80;box-shadow:var(--shadow);max-width:90%;text-align:center}
+    @media(min-width:680px){.content{padding:22px}.client-grid{grid-template-columns:repeat(4,1fr)}.hero{padding:24px}.stats{gap:12px}.sheet{border-radius:24px;margin-bottom:24px}.modal{align-items:center;padding:24px}.gridwide{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}}
+  </style>
+</head>
+<body>
+  <div id="authView" class="authwrap">
+    <form id="authForm" class="authcard">
+      <div class="authlogo">TA</div>
+      <h1>TAAZ Marketing Agent</h1>
+      <p id="authSubtitle">Your private marketing work desk. Sign in to see today's client tasks and content.</p>
+      <div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Minimum 6 characters"></div>
+      <button id="authSubmit" class="primary" type="submit" style="width:100%">Sign in</button>
+      <div id="authMessage" class="authmsg hidden"></div>
+      <button id="authSwitch" class="switch" type="button">New here? Create my private account</button>
+    </form>
+  </div>
+
+  <div id="appView" class="shell hidden">
+    <header class="top">
+      <div class="brand"><div><h1>TAAZ Marketing Agent</h1><small id="topSubtitle">Your marketing command centre</small></div><div class="avatar">A</div></div>
+    </header>
+    <main id="main" class="content"></main>
+    <nav class="nav"><div class="navinner">
+      <button class="navbtn active" data-page="today"><span>⌂</span>Today</button>
+      <button class="navbtn" data-page="tasks"><span>✓</span>Tasks</button>
+      <button class="navbtn" data-page="content"><span>▣</span>Content</button>
+      <button class="navbtn" data-page="clients"><span>◉</span>Clients</button>
+      <button class="navbtn" data-page="settings"><span>⚙</span>Settings</button>
+    </div></nav>
+  </div>
+
+  <div id="modal" class="modal hidden" aria-modal="true" role="dialog"><div id="sheet" class="sheet"></div></div>
+  <div id="toast" class="toast hidden" aria-live="polite"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/+esm';
+
+    const SUPABASE_URL = 'https://qvsibrkojistpaasfglh.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_v8_0fsDrmcFL-DVdUs_lsA_SkPo661g';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+    const authView=$('#authView'), appView=$('#appView'), main=$('#main'), modal=$('#modal'), sheet=$('#sheet'), toast=$('#toast');
+    let session=null, user=null, clients=[], tasks=[], contents=[], currentPage='today', authMode='signin', taskFilter='all';
+
+    const escapeHtml = (s='') => String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const localDateKey = d => { const x=new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}` };
+    const todayKey=()=>localDateKey(new Date());
+    const tomorrowKey=()=>{let d=new Date();d.setDate(d.getDate()+1);return localDateKey(d)};
+    const fmtDate = d => new Intl.DateTimeFormat('en-IN',{weekday:'short',day:'numeric',month:'short'}).format(new Date(d));
+    const fmtTime = d => new Intl.DateTimeFormat('en-IN',{hour:'numeric',minute:'2-digit'}).format(new Date(d));
+    const formatWhen = d => !d?'No due time':`${fmtDate(d)}, ${fmtTime(d)}`;
+    const initials = n => n.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    const clientName=id=>clients.find(c=>c.id===id)?.name || 'General';
+    const isDone=t=>t.status==='done';
+    const isOverdue=t=>t.due_at && !isDone(t) && new Date(t.due_at)<new Date();
+    const isToday=t=>t.due_at && localDateKey(t.due_at)===todayKey();
+    const priorityClass=p=>p==='urgent'?'red':p==='high'?'amber':p==='low'?'green':'blue';
+    const showToast=(msg)=>{toast.textContent=msg;toast.classList.remove('hidden');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.add('hidden'),2600)};
+
+    async function init(){
+      if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./sw.js'); }catch(e){} }
+      const {data:{session:s}}=await supabase.auth.getSession();
+      if(s) await enterApp(s); else showAuth();
+      supabase.auth.onAuthStateChange(async (_event,s2)=>{ if(s2 && (!session || s2.user.id!==session.user.id)) await enterApp(s2); if(!s2){session=null;user=null;showAuth()} });
+      setInterval(checkReminders,30000);
+    }
+
+    function showAuth(){authView.classList.remove('hidden');appView.classList.add('hidden')}
+    async function enterApp(s){session=s;user=s.user;authView.classList.add('hidden');appView.classList.remove('hidden');await ensureStarterData();await refreshData();render()}
+
+    async function ensureStarterData(){
+      await supabase.from('user_preferences').upsert({user_id:user.id,display_name:'Azhar',timezone:'Asia/Kolkata',daily_brief_time:'10:00',notifications_enabled:true,voice_language:'en-IN'},{onConflict:'user_id'});
+      const {data:existing}=await supabase.from('clients').select('id').limit(1);
+      if(!existing?.length){
+        await supabase.from('clients').insert([
+          {user_id:user.id,name:'Dr Deepthi',workstream:'ENT Instagram & digital marketing',platform:'Instagram',sort_order:1},
+          {user_id:user.id,name:'ZUVEN Tech',workstream:'Company LinkedIn & marketing',platform:'LinkedIn',sort_order:2},
+          {user_id:user.id,name:'Vishnu LinkedIn',workstream:'Founder / CEO LinkedIn management',platform:'LinkedIn',sort_order:3},
+          {user_id:user.id,name:'Praveen LinkedIn',workstream:'Workforce & recruitment LinkedIn management',platform:'LinkedIn',sort_order:4}
+        ]);
+      }
+    }
+
+    async function refreshData(){
+      const [c,t,co]=await Promise.all([
+        supabase.from('clients').select('*').eq('active',true).order('sort_order'),
+        supabase.from('tasks').select('*').order('due_at',{ascending:true,nullsFirst:false}),
+        supabase.from('content_schedule').select('*').order('scheduled_at',{ascending:true,nullsFirst:false})
+      ]);
+      clients=c.data||[];tasks=t.data||[];contents=co.data||[];
+    }
+
+    function setPage(page){currentPage=page;$$('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));render()}
+    $$('.navbtn').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
+
+    function render(){
+      if(currentPage==='today') renderToday();
+      if(currentPage==='tasks') renderTasks();
+      if(currentPage==='content') renderContent();
+      if(currentPage==='clients') renderClients();
+      if(currentPage==='settings') renderSettings();
+    }
+
+    function renderToday(){
+      const dueToday=tasks.filter(t=>isToday(t)&&!isDone(t));
+      const overdue=tasks.filter(isOverdue);
+      const todayContent=contents.filter(c=>c.scheduled_at&&localDateKey(c.scheduled_at)===todayKey()&&c.status!=='published'&&c.status!=='skipped');
+      const next=[...overdue,...dueToday.filter(t=>!overdue.some(o=>o.id===t.id))].slice(0,6);
+      main.innerHTML=`
+        <section class="hero"><div class="date">${new Intl.DateTimeFormat('en-IN',{weekday:'long',day:'numeric',month:'long'}).format(new Date())}</div><h2>Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, Azhar.</h2><p>${overdue.length?`${overdue.length} overdue item${overdue.length>1?'s':''} need attention.`:'You are ready for today.'}</p></section>
+        <div class="stats"><div class="stat"><b>${dueToday.length}</b><span>Tasks today</span></div><div class="stat"><b>${todayContent.length}</b><span>Posts today</span></div><div class="stat"><b>${overdue.length}</b><span>Overdue</span></div></div>
+        <div class="quick"><button id="quickTask" class="primary">+ Add task</button><button id="voiceTask" class="secondary mic" title="Speak a task">🎙</button></div>
+        <section class="section"><div class="section-head"><h3>Priority work</h3><button class="text-btn" id="allTasks">See all</button></div>${next.length?next.map(taskCard).join(''):`<div class="empty"><b>No urgent tasks</b>Add a task or use the microphone to plan your day.</div>`}</section>
+        <section class="section"><div class="section-head"><h3>Content scheduled today</h3><button class="text-btn" id="addContentToday">+ Add</button></div>${todayContent.length?todayContent.map(contentCard).join(''):`<div class="empty"><b>No content scheduled today</b>Your calendar is clear.</div>`}</section>
+        <section class="section"><div class="section-head"><h3>Daily brief</h3></div><div class="brief">${escapeHtml(makeDailyBrief())}</div><button id="copyBrief" class="secondary" style="width:100%;margin-top:9px">Copy brief for ChatGPT</button></section>`;
+      $('#quickTask').onclick=()=>openTaskModal(); $('#voiceTask').onclick=startVoiceTask; $('#allTasks').onclick=()=>setPage('tasks'); $('#addContentToday').onclick=()=>openContentModal(todayKey()); $('#copyBrief').onclick=copyBrief;
+      bindTaskActions();
+    }
+
+    function taskCard(t){
+      return `<div class="card"><div class="taskrow"><button class="check ${isDone(t)?'done':''}" data-complete="${t.id}" aria-label="${isDone(t)?'Mark incomplete':'Mark complete'}">${isDone(t)?'✓':''}</button><div class="grow"><div class="title">${escapeHtml(t.title)}</div><div class="meta"><span class="pill blue">${escapeHtml(clientName(t.client_id))}</span>${t.due_at?`<span class="pill ${isOverdue(t)?'red':''}">${escapeHtml(formatWhen(t.due_at))}</span>`:''}<span class="pill ${priorityClass(t.priority)}">${escapeHtml(t.priority)}</span></div></div><button class="text-btn" data-edit-task="${t.id}">Edit</button></div></div>`
+    }
+    function contentCard(c){
+      return `<div class="card"><div class="title">${escapeHtml(c.title)}</div><div class="meta"><span class="pill blue">${escapeHtml(clientName(c.client_id))}</span><span class="pill">${escapeHtml(c.platform)}</span><span class="pill">${escapeHtml(c.content_type)}</span>${c.scheduled_at?`<span class="pill amber">${escapeHtml(fmtTime(c.scheduled_at))}</span>`:''}<span class="pill ${c.status==='published'?'green':'blue'}">${escapeHtml(c.status)}</span></div></div>`
+    }
+
+    function renderTasks(){
+      let list=tasks;
+      if(taskFilter==='today') list=tasks.filter(t=>isToday(t)&&!isDone(t));
+      if(taskFilter==='overdue') list=tasks.filter(isOverdue);
+      if(taskFilter==='done') list=tasks.filter(isDone);
+      if(taskFilter==='open') list=tasks.filter(t=>!isDone(t)&&t.status!=='cancelled');
+      main.innerHTML=`<div class="page-title"><h2>Tasks</h2><button id="addTask" class="fab">+ Add task</button></div><div class="filter">${['all','today','open','overdue','done'].map(f=>`<button class="${taskFilter===f?'active':''}" data-filter="${f}">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}</div>${list.length?list.map(taskCard).join(''):`<div class="empty"><b>No tasks here</b>You're clear in this view.</div>`}`;
+      $('#addTask').onclick=()=>openTaskModal(); $$('[data-filter]').forEach(b=>b.onclick=()=>{taskFilter=b.dataset.filter;renderTasks()});bindTaskActions();
+    }
+
+    function renderContent(){
+      const upcoming=contents.filter(c=>c.status!=='published'&&c.status!=='skipped');
+      const published=contents.filter(c=>c.status==='published').slice(-10).reverse();
+      main.innerHTML=`<div class="page-title"><h2>Content</h2><button id="addContent" class="fab">+ Schedule</button></div><section class="section"><div class="section-head"><h3>Upcoming</h3></div>${upcoming.length?upcoming.map(c=>`<div class="card" data-edit-content="${c.id}">${contentCard(c).replace(/^<div class="card">|<\/div>$/g,'')}</div>`).join(''):`<div class="empty"><b>No upcoming content</b>Schedule your next post or reel.</div>`}</section><section class="section"><div class="section-head"><h3>Recently published</h3></div>${published.length?published.map(contentCard).join(''):`<div class="empty"><b>Nothing marked published yet</b>Completed posts will appear here.</div>`}</section>`;
+      $('#addContent').onclick=()=>openContentModal(); $$('[data-edit-content]').forEach(x=>x.onclick=()=>openContentModal(null,contents.find(c=>c.id===x.dataset.editContent)));
+    }
+
+    function renderClients(){
+      main.innerHTML=`<div class="page-title"><h2>Clients & work areas</h2></div><div class="client-grid">${clients.map(c=>`<div class="client"><div class="initial">${initials(c.name)}</div><b>${escapeHtml(c.name)}</b><p>${escapeHtml(c.workstream||'')}</p><div class="meta"><span class="pill blue">${escapeHtml(c.platform||'General')}</span></div></div>`).join('')}</div><section class="section"><div class="empty"><b>Kept simple for Version 1</b>We can add or edit client work areas later without rebuilding the app.</div></section>`;
+    }
+
+    function renderSettings(){
+      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div><div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div><div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div><div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
+      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#signOut').onclick=async()=>{await supabase.auth.signOut()};
+    }
+
+    function bindTaskActions(){
+      $$('[data-complete]').forEach(b=>b.onclick=async()=>{const t=tasks.find(x=>x.id===b.dataset.complete);const done=!isDone(t);await supabase.from('tasks').update({status:done?'done':'todo',completed_at:done?new Date().toISOString():null,updated_at:new Date().toISOString()}).eq('id',t.id);await refreshData();render()});
+      $$('[data-edit-task]').forEach(b=>b.onclick=()=>openTaskModal(tasks.find(t=>t.id===b.dataset.editTask)));
+    }
+
+    function openModal(html){sheet.innerHTML=html;modal.classList.remove('hidden');sheet.querySelector('[data-close]')?.addEventListener('click',closeModal)}
+    function closeModal(){modal.classList.add('hidden');sheet.innerHTML=''}
+    modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+
+    function defaultLocalDateTime(iso){if(!iso)return {date:todayKey(),time:''};const d=new Date(iso);return {date:localDateKey(d),time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}}
+    function makeIso(date,time){if(!date)return null;const d=new Date(`${date}T${time||'23:59'}:00`);return isNaN(d)?null:d.toISOString()}
+
+    function openTaskModal(existing=null,prefill={}){
+      const dt=defaultLocalDateTime(existing?.due_at);const rem=defaultLocalDateTime(existing?.reminder_at);
+      openModal(`<div class="sheethead"><h3>${existing?'Edit':'Add'} task</h3><button class="x" data-close>×</button></div><form id="taskForm">
+        <div class="field"><label>Client / work area</label><select id="taskClient"><option value="">General</option>${clients.map(c=>`<option value="${c.id}" ${(existing?.client_id||prefill.client_id)===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Task</label><input id="taskTitle" required value="${escapeHtml(existing?.title||prefill.title||'')}" placeholder="e.g. Create Dr Deepthi carousel"></div>
+        <div class="grid2"><div class="field"><label>Due date</label><input id="taskDate" type="date" value="${existing?dt.date:(prefill.date||todayKey())}"></div><div class="field"><label>Due time</label><input id="taskTime" type="time" value="${existing?dt.time:(prefill.time||'')}"></div></div>
+        <div class="field"><label>Priority</label><select id="taskPriority">${['low','medium','high','urgent'].map(p=>`<option value="${p}" ${(existing?.priority||prefill.priority||'medium')===p?'selected':''}>${p[0].toUpperCase()+p.slice(1)}</option>`).join('')}</select></div>
+        <div class="grid2"><div class="field"><label>Reminder date (optional)</label><input id="remDate" type="date" value="${existing?.reminder_at?rem.date:''}"></div><div class="field"><label>Reminder time</label><input id="remTime" type="time" value="${existing?.reminder_at?rem.time:''}"></div></div>
+        <div class="field"><label>Notes (optional)</label><textarea id="taskDesc">${escapeHtml(existing?.description||'')}</textarea></div>
+        <div class="actions">${existing?'<button id="deleteTask" type="button" class="danger">Delete</button>':''}<button type="submit" class="primary">${existing?'Save changes':'Add task'}</button></div></form>`);
+      $('#taskForm').onsubmit=async e=>{e.preventDefault();const payload={user_id:user.id,client_id:$('#taskClient').value||null,title:$('#taskTitle').value.trim(),description:$('#taskDesc').value.trim()||null,priority:$('#taskPriority').value,due_at:makeIso($('#taskDate').value,$('#taskTime').value),reminder_at:$('#remDate').value?makeIso($('#remDate').value,$('#remTime').value):null,status:existing?.status||'todo',source:prefill.source||existing?.source||'manual',updated_at:new Date().toISOString()};let res=existing?await supabase.from('tasks').update(payload).eq('id',existing.id):await supabase.from('tasks').insert(payload);if(res.error){showToast(res.error.message);return}closeModal();await refreshData();render();showToast(existing?'Task updated':'Task added')};
+      if(existing)$('#deleteTask').onclick=async()=>{if(confirm('Delete this task?')){await supabase.from('tasks').delete().eq('id',existing.id);closeModal();await refreshData();render();showToast('Task deleted')}};
+    }
+
+    function openContentModal(prefillDate=null,existing=null){
+      const dt=defaultLocalDateTime(existing?.scheduled_at);
+      openModal(`<div class="sheethead"><h3>${existing?'Edit':'Schedule'} content</h3><button class="x" data-close>×</button></div><form id="contentForm">
+        <div class="field"><label>Client / work area</label><select id="contentClient" required>${clients.map(c=>`<option value="${c.id}" ${existing?.client_id===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select></div>
+        <div class="grid2"><div class="field"><label>Platform</label><select id="contentPlatform">${['Instagram','LinkedIn','Facebook','Other'].map(p=>`<option ${existing?.platform===p?'selected':''}>${p}</option>`).join('')}</select></div><div class="field"><label>Content type</label><select id="contentType">${['Post','Reel','Carousel','Story','LinkedIn Post','Video'].map(p=>`<option ${existing?.content_type===p?'selected':''}>${p}</option>`).join('')}</select></div></div>
+        <div class="field"><label>Topic / title</label><input id="contentTitle" required value="${escapeHtml(existing?.title||'')}" placeholder="e.g. Ear health carousel"></div>
+        <div class="field"><label>Hook (optional)</label><input id="contentHook" value="${escapeHtml(existing?.hook||'')}"></div>
+        <div class="grid2"><div class="field"><label>Schedule date</label><input id="contentDate" type="date" value="${existing?dt.date:(prefillDate||todayKey())}"></div><div class="field"><label>Time</label><input id="contentTime" type="time" value="${existing?dt.time:''}"></div></div>
+        <div class="field"><label>Status</label><select id="contentStatus">${['idea','drafting','ready','scheduled','published','skipped'].map(s=>`<option value="${s}" ${(existing?.status||'idea')===s?'selected':''}>${s[0].toUpperCase()+s.slice(1)}</option>`).join('')}</select></div>
+        <div class="field"><label>Notes / caption draft (optional)</label><textarea id="contentNotes">${escapeHtml(existing?.notes||existing?.caption||'')}</textarea></div>
+        <div class="actions">${existing?'<button id="deleteContent" type="button" class="danger">Delete</button>':''}<button type="submit" class="primary">${existing?'Save changes':'Schedule content'}</button></div></form>`);
+      $('#contentForm').onsubmit=async e=>{e.preventDefault();const status=$('#contentStatus').value;const payload={user_id:user.id,client_id:$('#contentClient').value,platform:$('#contentPlatform').value,content_type:$('#contentType').value,title:$('#contentTitle').value.trim(),hook:$('#contentHook').value.trim()||null,notes:$('#contentNotes').value.trim()||null,scheduled_at:makeIso($('#contentDate').value,$('#contentTime').value),status,published_at:status==='published'?(existing?.published_at||new Date().toISOString()):null,updated_at:new Date().toISOString()};let res=existing?await supabase.from('content_schedule').update(payload).eq('id',existing.id):await supabase.from('content_schedule').insert(payload);if(res.error){showToast(res.error.message);return}closeModal();await refreshData();render();showToast(existing?'Content updated':'Content scheduled')};
+      if(existing)$('#deleteContent').onclick=async()=>{if(confirm('Delete this content item?')){await supabase.from('content_schedule').delete().eq('id',existing.id);closeModal();await refreshData();render();showToast('Content deleted')}};
+    }
+
+    function parseVoice(text){
+      let raw=text.trim(), lower=raw.toLowerCase(), client_id=null;
+      const map=[['deepthi','Dr Deepthi'],['zuven','ZUVEN Tech'],['vishnu','Vishnu LinkedIn'],['praveen','Praveen LinkedIn']];
+      for(const [key,name] of map){if(lower.includes(key)){client_id=clients.find(c=>c.name===name)?.id||null;break}}
+      let date=todayKey();if(/\btomorrow\b/.test(lower))date=tomorrowKey();
+      const days=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];for(let i=0;i<days.length;i++){if(lower.includes(days[i])){let d=new Date(),delta=(i-d.getDay()+7)%7||7;d.setDate(d.getDate()+delta);date=localDateKey(d);break}}
+      let time='';const m=lower.match(/(?:at|by)?\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/);if(m){let h=Number(m[1]),min=Number(m[2]||0);if(m[3]==='pm'&&h<12)h+=12;if(m[3]==='am'&&h===12)h=0;time=`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`}
+      let title=raw.replace(/\b(today|tomorrow|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/ig,'').replace(/(?:at|by)?\s*\d{1,2}(?::\d{2})?\s*(am|pm)\b/ig,'').replace(/\s+/g,' ').trim();
+      return {title,date,time,client_id,source:'voice'};
+    }
+
+    function startVoiceTask(){
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showToast('Voice entry is not supported in this browser. Try Chrome on your Samsung phone.');return}
+      const r=new SR();r.lang='en-IN';r.interimResults=false;r.maxAlternatives=1;showToast('Listening… say the task, client and time');
+      r.onresult=e=>{const text=e.results[0][0].transcript;showToast(`Heard: ${text}`);openTaskModal(null,parseVoice(text))};r.onerror=()=>showToast('I could not hear that. Please try again.');r.start();
+    }
+
+    function makeDailyBrief(){
+      const over=tasks.filter(isOverdue);const due=tasks.filter(t=>isToday(t)&&!isDone(t));const posts=contents.filter(c=>c.scheduled_at&&localDateKey(c.scheduled_at)===todayKey()&&c.status!=='published'&&c.status!=='skipped');
+      let lines=[`TODAY: ${due.length} task${due.length===1?'':'s'}, ${posts.length} content item${posts.length===1?'':'s'}, ${over.length} overdue.`];
+      if(over.length){lines.push('\nOVERDUE');over.slice(0,5).forEach((t,i)=>lines.push(`${i+1}. ${clientName(t.client_id)} — ${t.title}`))}
+      if(due.length){lines.push('\nDUE TODAY');due.slice(0,7).forEach((t,i)=>lines.push(`${i+1}. ${clientName(t.client_id)} — ${t.title}${t.due_at?' — '+fmtTime(t.due_at):''}`))}
+      if(posts.length){lines.push('\nCONTENT TODAY');posts.slice(0,7).forEach((c,i)=>lines.push(`${i+1}. ${clientName(c.client_id)} — ${c.title}${c.scheduled_at?' — '+fmtTime(c.scheduled_at):''}`))}
+      if(!over.length&&!due.length&&!posts.length)lines.push('\nNo scheduled work yet. Add your next task or content item.');
+      return lines.join('\n');
+    }
+    async function copyBrief(){const text=`I am using my TAAZ Marketing Agent. Here is my current daily work brief:\n\n${makeDailyBrief()}\n\nPlease prioritise this work for me and tell me what I should do first.`;try{await navigator.clipboard.writeText(text);showToast('Copied. Paste this into ChatGPT.')}catch{showToast('Copy was blocked by the browser.')}}
+
+    async function requestNotifications(){if(!('Notification'in window)){showToast('Notifications are not supported here.');return}const p=await Notification.requestPermission();showToast(p==='granted'?'Notifications enabled':'Notifications were not enabled')}
+    async function showNotification(title,body,tag){if(Notification.permission!=='granted')return;try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(title,{body,tag,icon:'./icon-192.png',badge:'./icon-192.png'})}catch(e){}}
+    async function checkReminders(){if(!user||Notification.permission!=='granted')return;const seen=JSON.parse(localStorage.getItem('taazNotified')||'{}');const now=Date.now();for(const t of tasks){if(t.reminder_at&&!isDone(t)){const tm=new Date(t.reminder_at).getTime();if(tm<=now&&now-tm<10*60*1000&&!seen[`t:${t.id}`]){await showNotification('TAAZ task reminder',`${clientName(t.client_id)} — ${t.title}`,`task-${t.id}`);seen[`t:${t.id}`]=now}}}for(const c of contents){if(c.reminder_at&&c.status!=='published'&&c.status!=='skipped'){const tm=new Date(c.reminder_at).getTime();if(tm<=now&&now-tm<10*60*1000&&!seen[`c:${c.id}`]){await showNotification('TAAZ content reminder',`${clientName(c.client_id)} — ${c.title}`,`content-${c.id}`);seen[`c:${c.id}`]=now}}}localStorage.setItem('taazNotified',JSON.stringify(seen))}
+
+    $('#authSwitch').onclick=()=>{authMode=authMode==='signin'?'signup':'signin';$('#authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';$('#authSwitch').textContent=authMode==='signin'?'New here? Create my private account':'Already created it? Sign in';$('#authSubtitle').textContent=authMode==='signin'?"Your private marketing work desk. Sign in to see today's client tasks and content.":'Create your private login once. You can then use the same account on your Samsung phone and laptop.';$('#authMessage').classList.add('hidden')};
+    $('#authForm').onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;$('#authSubmit').disabled=true;$('#authSubmit').textContent='Please wait…';let result;if(authMode==='signin') result=await supabase.auth.signInWithPassword({email,password}); else result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.href}});$('#authSubmit').disabled=false;$('#authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';const box=$('#authMessage');box.classList.remove('hidden');if(result.error){box.textContent=result.error.message;return}if(authMode==='signup'&&!result.data.session){box.textContent='Account created. Please check your email and confirm the sign-in link, then return here.'}else box.textContent='Signed in.'};
+
+    init();
+  </script>
+</body>
+</html>
