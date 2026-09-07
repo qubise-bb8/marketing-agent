@@ -1,12 +1,12 @@
 {
   "name": "TAAZ Marketing Agent",
   "short_name": "TAAZ Agent",
-  "description": "Personal digital marketing task and content manager",
+  "description": "Personal marketing and apartment management app",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f8f7ff",
-  "theme_color": "#4f7cff",
+  "theme_color": "#5f86ff",
   "icons": [
     {
       "src": "./icon-192.png",
