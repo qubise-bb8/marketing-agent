@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#4f7cff" />
-  <meta name="description" content="TAAZ Marketing Agent - personal client task and content manager" />
+  <meta name="theme-color" content="#0b8fa8" />
+  <meta name="description" content="TAAZ - personal work, content, expense and apartment assistant" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +39,44 @@
     @media(min-width:900px){.client-grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:430px){.stats,.content-overview,.mc-summary{grid-template-columns:1fr}.client-summary{padding-left:0;gap:16px;flex-wrap:wrap}.hero-row{align-items:flex-start}.hero-3d{width:58px;height:58px}.stat-detail{min-height:auto}.brand h1{font-size:20px}}
     @media(min-width:680px){.content{padding:22px}.hero{padding:24px}.stats{gap:12px}.sheet{border-radius:26px;margin-bottom:24px}.modal{align-items:center;padding:24px}.gridwide{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}}
+
+    /* ===== TAAZ V9 · Teal / White / Yellow app system ===== */
+    :root{--bg:#f3f6f7;--card:#fff;--text:#173042;--muted:#6f7e86;--line:#dce8eb;--navy:#066f86;--blue:#0b8fa8;--blue2:#e8f7f9;--pink:#ffc400;--pink2:#fff7cc;--green:#16846c;--greenbg:#e5f6f0;--amber:#9a7000;--amberbg:#fff3bf;--shadow:0 10px 26px rgba(4,107,130,.10);--shadow3d:0 10px 18px rgba(4,107,130,.17),inset 0 1px 0 rgba(255,255,255,.95)}
+    html{background:var(--bg)}
+    body{background:linear-gradient(180deg,#eef7f8 0,#f6f8f8 170px,#f3f6f7 100%);color:var(--text)}
+    .shell{max-width:940px}
+    .top{background:linear-gradient(135deg,#087f99,#0b8fa8 60%,#42b7c1);border-bottom:0;box-shadow:0 6px 18px rgba(4,107,130,.16);padding:12px 16px}
+    .brandmark{background:#fff;color:#0b8fa8;border:0;box-shadow:0 7px 16px rgba(0,83,103,.18);font-weight:600}.brandmark:after{display:none}
+    .brand h1{color:#fff;font-weight:500;font-size:22px}.brand small{color:rgba(255,255,255,.82);font-size:12px}
+    .content{padding:18px}
+    .hero{background:linear-gradient(135deg,#0b8fa8,#48b9c3);border-radius:20px;box-shadow:0 12px 25px rgba(4,107,130,.15);padding:20px;border-bottom:5px solid #ffc400}
+    .hero:before{background:rgba(255,255,255,.10)}.hero:after{background:rgba(255,196,0,.22)}
+    .hero h2{font-weight:500}.hero-3d{background:#fff;border-radius:50%;box-shadow:0 8px 18px rgba(2,89,107,.16);border:4px solid rgba(255,255,255,.32)}
+    .stats{gap:10px;margin:14px 0}.stat{border-radius:14px;border:1px solid #dce8eb;box-shadow:0 5px 13px rgba(4,107,130,.07);padding:13px 14px;background:#fff!important;border-top:3px solid #ffc400}.stat:after{display:none}.stat-line{gap:11px}.stat-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,#fff,#dff5f7);box-shadow:0 7px 14px rgba(4,107,130,.12);border:1px solid #d3ecef}.stat-value{font-size:31px;color:#087f99}.stat-label{font-size:14px;font-weight:500}.stat-detail{font-size:12px;margin-top:4px}
+    .premium-icon-svg{filter:drop-shadow(0 3px 3px rgba(2,89,107,.18))}.premium-icon-svg .back{fill:#ffc400}.premium-icon-svg .main{fill:#42b7c1}.premium-icon-svg .deep{fill:#087f99}.premium-icon-svg .soft{fill:#8bd6dc}.premium-icon-svg .hi{fill:#fff}.premium-icon-svg .line{stroke:#fff}
+    .primary{background:#0b8fa8;color:#fff;box-shadow:0 7px 14px rgba(4,107,130,.17);border-radius:11px}.primary:hover{background:#087f99}.secondary{border-radius:11px;border:1px solid #d7e6e9;box-shadow:none}.fab{background:#ffc400;color:#173042;box-shadow:0 5px 12px rgba(199,153,0,.18);border-radius:11px;font-weight:500}.text-btn,.backbtn{color:#087f99}
+    .card{border-radius:13px;border:1px solid #dde9eb;box-shadow:0 4px 11px rgba(4,107,130,.055)}.task-card:before,.content-card:before{background:#0b8fa8}.title{font-weight:400}.pill{border-radius:7px}.pill.blue{background:#e6f7f8;color:#087f99}.pill.amber{background:#fff3bf;color:#7f6000}
+    .nav{background:#fff;border-top:3px solid #ffc400;box-shadow:0 -6px 18px rgba(4,107,130,.08);padding-top:6px}.navinner{max-width:940px}.navbtn{border-radius:9px;color:#65767d;font-size:10px}.navbtn .icon-shell{width:36px;height:36px;border-radius:11px;background:#f3f8f8;border:1px solid #dce9eb;box-shadow:none}.navbtn.active{background:#eaf8f9;color:#087f99}.navbtn.active .icon-shell{background:#0b8fa8;border-color:#0b8fa8;box-shadow:0 5px 10px rgba(4,107,130,.18);transform:none}.navbtn.active .premium-icon-svg .back{fill:#ffc400}.navbtn.active .premium-icon-svg .main{fill:#fff}.navbtn.active .premium-icon-svg .deep{fill:#d9f5f7}.navbtn.active .premium-icon-svg .soft{fill:#fff}
+    .page-title h2,.section-head h3{font-weight:500}.page-title h2{color:#087f99}.page-title{border-bottom:2px solid #ffc400;padding-bottom:8px}
+    .filter button{border-radius:8px}.filter button.active{background:#0b8fa8}
+    .client{border-radius:13px;background:#fff;border:1px solid #dbe8ea;border-left:5px solid #0b8fa8;box-shadow:0 4px 11px rgba(4,107,130,.055)}.client:after{background:rgba(255,196,0,.12)}.client-icon3d,.mini-3d,.content-icon3d{background:linear-gradient(145deg,#fff,#e4f5f7)!important;color:#087f99;box-shadow:0 5px 11px rgba(4,107,130,.10)}.client-name{font-weight:500}
+    .client-hero{background:linear-gradient(135deg,#087f99,#48b9c3);border-radius:16px;border-bottom:5px solid #ffc400;box-shadow:0 9px 18px rgba(4,107,130,.13)}
+    .content-overview{gap:10px}.overview-card{border-radius:13px;box-shadow:0 4px 11px rgba(4,107,130,.055);background:#fff!important;border-top:3px solid #ffc400}.overview-icon{background:#e5f6f8;color:#087f99;box-shadow:none}.overview-number{color:#087f99}
+    .tomorrow-item{border-radius:13px;box-shadow:0 4px 11px rgba(4,107,130,.05)}
+    .mc-head h2{color:#087f99;font-weight:500}.mc-month{border-radius:9px}.mc-expected,.mc-statusline{background:#eaf8f9;border:1px solid #d3ecef;border-radius:10px}.mc-summary{gap:9px}.mc-summary-card{border-radius:13px;background:#fff!important;border-top:3px solid #ffc400;box-shadow:0 4px 11px rgba(4,107,130,.055)}.mc-3d{background:#e8f7f9;border-color:#d6edef;box-shadow:none}.mc-positive{color:#087f99}.mc-negative{color:#b66b00}.mc-unit,.mc-expense{border-radius:11px;box-shadow:none}.mc-toggle{border-radius:9px}.mc-toggle.received{background:#0b8fa8;box-shadow:none}.mc-mode-option{border-radius:12px;box-shadow:none}.mc-mode-option.active{background:#0b8fa8;box-shadow:none}.mc-mode-option .mode-dot{background:#fff3bf;color:#8d6900}
+    .authwrap{background:linear-gradient(155deg,#0b8fa8,#48b9c3)}.authcard{border-radius:18px;box-shadow:0 20px 38px rgba(0,73,88,.20);border:0}.authlogo{background:#fff;color:#0b8fa8;border-radius:50%;box-shadow:0 8px 18px rgba(0,73,88,.20)}.switch{color:#087f99}
+    .sheet{border-radius:18px 18px 0 0}.field input,.field select,.field textarea{border-radius:9px}.x{border-radius:9px}
+    .brief{border-radius:12px;background:#fff;border-left:5px solid #ffc400}
+    .ai-btn{background:#0b8fa8!important;box-shadow:none;border-radius:9px}.small-btn{border-radius:9px}
+
+    /* V9 action launcher */
+    .v9-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0 2px}.v9-action{border:1px solid #dbe8ea;background:#fff;border-radius:12px;min-height:88px;padding:10px 8px;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 10px rgba(4,107,130,.055);font-size:11px;text-align:center}.v9-action.primary-action{background:#0b8fa8;color:#fff;border-color:#0b8fa8}.v9-action.yellow-action{background:#ffc400;border-color:#ffc400;color:#173042}.v9-action-icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e8f7f9;color:#087f99}.primary-action .v9-action-icon{background:rgba(255,255,255,.18);color:#fff}.yellow-action .v9-action-icon{background:#fff;color:#087f99}.v9-action-icon svg{width:21px;height:21px}
+
+    /* Expense tracker */
+    .expense-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.expense-head h2{margin:0;color:#087f99;font-size:25px;font-weight:500}.expense-head p{margin:4px 0 0;color:var(--muted);font-size:13px}.expense-month{border:1px solid var(--line);border-radius:9px;padding:8px;background:#fff;min-height:42px}.expense-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:10px 0 16px}.expense-summary-card{background:#fff;border:1px solid var(--line);border-top:3px solid #ffc400;border-radius:13px;padding:13px;box-shadow:0 4px 11px rgba(4,107,130,.055)}.expense-summary-value{font-size:24px;color:#087f99;font-weight:500}.expense-summary-label{font-size:12px;color:var(--muted);margin-top:2px}.expense-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.expense-toolbar button{min-height:42px}.expense-list{display:grid;gap:8px}.expense-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px}.expense-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#e8f7f9;color:#087f99;flex:0 0 auto}.expense-main{flex:1;min-width:0}.expense-title{font-size:14px}.expense-meta{font-size:11px;color:var(--muted);margin-top:2px}.expense-amount{font-size:15px;font-weight:500;white-space:nowrap}.scope-chip{display:inline-flex;border-radius:6px;padding:2px 6px;background:#fff3bf;color:#735600;font-size:10px;margin-left:5px}.expense-delete{border:0;background:#fff1d6;color:#8b6500;border-radius:8px;width:34px;height:34px}.voice-transcript{background:#eef9fa;border:1px solid #d2ecef;border-radius:10px;padding:10px 12px;color:#46616a;font-size:13px;margin:10px 0}.voice-help{font-size:12px;color:var(--muted);line-height:1.5}.voice-choice{display:grid;gap:8px;margin-top:12px}.voice-choice button{width:100%;text-align:left;min-height:46px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 11px;color:var(--text)}
+
+    @media(max-width:650px){.v9-actions{grid-template-columns:repeat(2,1fr)}.expense-summary{grid-template-columns:1fr}.brand small{display:none}.content{padding:13px}.stat-main{gap:6px}.stat-label{font-size:13px}.navbtn{font-size:9px}.navbtn .icon-shell{width:34px;height:34px}.premium-icon-svg{width:27px;height:27px}}
+
   </style>
 </head>
 <body>
@@ -57,7 +95,7 @@
 
   <div id="appView" class="shell hidden">
     <header class="top">
-      <div class="brand"><div class="brand-left"><div class="brandmark">TA</div><div><h1>TAAZ Marketing Agent</h1><small id="topSubtitle">Your marketing command centre</small></div></div></div>
+      <div class="brand"><div class="brand-left"><div class="brandmark">TA</div><div><h1>TAAZ Marketing Agent</h1><small id="topSubtitle">Your daily work & life command centre</small></div></div></div>
     </header>
     <main id="main" class="content"></main>
     <nav class="nav"><div class="navinner">
@@ -85,6 +123,7 @@
     const authView=$('#authView'), appView=$('#appView'), main=$('#main'), modal=$('#modal'), sheet=$('#sheet'), toast=$('#toast');
     let session=null, user=null, clients=[], tasks=[], contents=[], currentPage='today', selectedClientId=null, authMode='signin', taskFilter='today';
     let mcUnits=[], mcPayments=[], mcExpenses=[], mcMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+    let expenses=[], expenseMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, activeRecognition=null;
 
     const escapeHtml = (s='') => String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     const localDateKey = d => { const x=new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}` };
@@ -222,12 +261,13 @@
     }
 
     async function refreshData(){
-      const [c,t,co]=await Promise.all([
+      const [c,t,co,ex]=await Promise.all([
         supabase.from('clients').select('*').eq('active',true).order('sort_order'),
         supabase.from('tasks').select('*').order('due_at',{ascending:true,nullsFirst:false}),
-        supabase.from('content_schedule').select('*').order('scheduled_at',{ascending:true,nullsFirst:false})
+        supabase.from('content_schedule').select('*').order('scheduled_at',{ascending:true,nullsFirst:false}),
+        supabase.from('expenses').select('*').order('expense_date',{ascending:false}).order('created_at',{ascending:false})
       ]);
-      clients=c.data||[];tasks=t.data||[];contents=co.data||[];
+      clients=c.data||[];tasks=t.data||[];contents=co.data||[];expenses=ex.data||[];
     }
 
     async function ensureMCUnits(){
@@ -257,6 +297,7 @@
     async function setPage(page){
       currentPage=page;$$('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
       if(page==='mc'){main.innerHTML='<div class="simple-empty">Loading Mehak Classic accounts…</div>';await refreshMCData();renderMC();return}
+      if(page==='expenses'){renderExpenses();return}
       render();
     }
     $$('.navbtn').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
@@ -268,6 +309,7 @@
       if(currentPage==='clients') renderClients();
       if(currentPage==='client') renderClientDetail(selectedClientId);
       if(currentPage==='mc') renderMC();
+      if(currentPage==='expenses') renderExpenses();
       if(currentPage==='settings') renderSettings();
     }
 
@@ -279,11 +321,11 @@
       main.innerHTML=`
         <section class="hero"><div class="hero-row"><div class="hero-copy"><div class="date">${new Intl.DateTimeFormat('en-IN',{weekday:'long',day:'numeric',month:'long'}).format(new Date())}</div><h2>Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, Azhar.</h2><p>${overdue.length?`${overdue.length} overdue item${overdue.length>1?'s':''} need attention.`:`${dueToday.length} task${dueToday.length===1?'':'s'} and ${todayContent.length} content item${todayContent.length===1?'':'s'} on your desk today.`}</p></div><div class="hero-3d">${premiumIcon('sparkles')}</div></div></section>
         <div class="stats"><div class="stat"><div class="stat-line"><div class="stat-icon">${premiumIcon('check')}</div><div class="stat-copy"><div class="stat-main"><span class="stat-value">${dueToday.length}</span><span class="stat-label">Tasks pending</span></div><div class="stat-detail">${dueToday.length?`${dueToday.length} due today.`:'Nothing due today.'}</div></div></div></div><div class="stat"><div class="stat-line"><div class="stat-icon">${premiumIcon('calendar')}</div><div class="stat-copy"><div class="stat-main"><span class="stat-value">${todayContent.length}</span><span class="stat-label">Posts today</span></div><div class="stat-detail">${todayContent.length?`${todayContent.length} scheduled today.`:'No posts today.'}</div></div></div></div><div class="stat"><div class="stat-line"><div class="stat-icon">${premiumIcon('clock')}</div><div class="stat-copy"><div class="stat-main"><span class="stat-value">${overdue.length}</span><span class="stat-label">Overdue items</span></div><div class="stat-detail">${overdue.length?`${overdue.length} need attention.`:'You are clear today.'}</div></div></div></div></div>
-        <div class="quick"><button id="quickTask" class="primary">＋ Add a task</button><button id="voiceTask" class="secondary mic" title="Speak a task">${iconSvg('mic')}</button></div>
+        <div class="v9-actions"><button id="voiceAssistant" class="v9-action primary-action" type="button"><span class="v9-action-icon">${iconSvg('mic')}</span><span>Voice assistant</span></button><button id="speakBrief" class="v9-action yellow-action" type="button"><span class="v9-action-icon">${iconSvg('megaphone')}</span><span>Speak daily brief</span></button><button id="quickExpense" class="v9-action" type="button"><span class="v9-action-icon">${iconSvg('wallet')}</span><span>Expenses</span></button><button id="quickTask" class="v9-action" type="button"><span class="v9-action-icon">${iconSvg('check')}</span><span>Add task</span></button></div>
         <section class="section"><div class="section-head"><h3>Priority work</h3></div>${next.length?next.map(taskCard).join(''):`<div class="empty"><b>No urgent tasks</b>Add a task or use the microphone to plan your day.</div>`}</section>
         <section class="section"><div class="section-head"><h3>Content scheduled today</h3><button class="text-btn" id="addContentToday">+ Add</button></div>${todayContent.length?todayContent.map(c=>contentCard(c,true)).join(''):`<div class="empty"><b>No content scheduled today</b>Your calendar is clear.</div>`}</section>
         <section class="section"><div class="section-head"><h3>Daily brief</h3></div><div class="brief">${escapeHtml(makeDailyBrief())}</div><button id="copyBrief" class="secondary" style="width:100%;margin-top:9px">Copy brief for ChatGPT</button></section>`;
-      $('#quickTask').onclick=()=>openTaskModal(); $('#voiceTask').onclick=startVoiceTask; $('#addContentToday').onclick=()=>openContentModal(todayKey()); $('#copyBrief').onclick=copyBrief;
+      $('#quickTask').onclick=()=>openTaskModal(); $('#voiceAssistant').onclick=startVoiceAssistant; $('#speakBrief').onclick=()=>speakText(makeSpokenBrief()); $('#quickExpense').onclick=()=>setPage('expenses'); $('#addContentToday').onclick=()=>openContentModal(todayKey()); $('#copyBrief').onclick=copyBrief;
       bindTaskActions();bindContentActions();
     }
 
@@ -354,7 +396,7 @@
       const paymentMap=new Map(mcPayments.map(p=>[p.unit_id,p]));
       const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`));
       const unitsHtml=mcUnits.map(u=>{const p=paymentMap.get(u.id);const received=!!p?.received;const mode=received?(p?.payment_mode==='cash'?'Cash':p?.payment_mode==='online'?'Online':'Set mode'):'';return `<div class="mc-unit"><div class="mc-3d">${premiumIcon('home')}</div><div class="mc-unit-copy"><div class="mc-unit-name">${escapeHtml(u.unit_name)}</div><div class="mc-unit-amount">${money(u.monthly_amount)} monthly</div></div><button class="mc-toggle ${received?'received':''}" data-mc-payment="${p?.id||''}" type="button">${received?`Received · ${mode}`:'Not received'}</button></div>`}).join('');
-      const expenseHtml=mcExpenses.length?mcExpenses.map(e=>`<div class="mc-expense"><div class="mc-3d">${e.category==='water'?premiumIcon('droplet'):e.category==='electricity'?premiumIcon('bolt'):e.category==='watchman'?premiumIcon('users'):premiumIcon('receipt')}</div><div class="mc-expense-main"><div class="mc-expense-title">${escapeHtml(e.description||mcCategoryLabel(e.category))}</div><div class="mc-expense-meta">${escapeHtml(mcCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}</div></div><div class="mc-expense-amount">${money(e.amount)}</div><button class="mc-delete" data-mc-delete="${e.id}" title="Delete expense" type="button">×</button></div>`).join(''):`<div class="simple-empty">No expenses entered for ${escapeHtml(monthLabel)}.</div>`;
+      const expenseHtml=mcExpenses.length?mcExpenses.map(e=>`<div class="mc-expense"><div class="mc-3d">${e.category==='water'?premiumIcon('droplet'):e.category==='electricity'?premiumIcon('bolt'):e.category==='watchman'?premiumIcon('users'):premiumIcon('receipt')}</div><div class="mc-expense-main"><div class="mc-expense-title">${escapeHtml(e.description||mcCategoryLabel(e.category))}</div><div class="mc-expense-meta">${escapeHtml(mcCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}${e.payment_mode?` · ${escapeHtml(e.payment_mode)}`:''}</div></div><div class="mc-expense-amount">${money(e.amount)}</div><button class="mc-delete" data-mc-delete="${e.id}" title="Delete expense" type="button">×</button></div>`).join(''):`<div class="simple-empty">No expenses entered for ${escapeHtml(monthLabel)}.</div>`;
       main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-summary"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${receivedCount} of ${mcUnits.length} units paid</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Balance</div></div></div><div class="mc-detail">Collection minus expenses</div></div></div><div class="mc-statusline">${receivedCount} received · ${cashCount} cash · ${onlineCount} online · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} collection</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
       $('#mcMonth').onchange=async e=>{mcMonthValue=e.target.value||mcMonthValue;main.innerHTML='<div class="simple-empty">Loading month…</div>';await refreshMCData();renderMC()};
       $$('[data-mc-payment]').forEach(b=>b.onclick=()=>{const id=b.dataset.mcPayment;if(!id)return;const p=mcPayments.find(x=>x.id===id);if(p)openMCPaymentModal(p)});
@@ -382,14 +424,52 @@
     }
 
     function openMCExpenseModal(){
-      openModal(`<div class="sheethead"><h3>Add apartment expense</h3><button class="x" data-close>×</button></div><form id="mcExpenseForm"><div class="field"><label>Expense type</label><select id="mcExpenseCategory"><option value="electricity">Electricity bill</option><option value="water">Water bill</option><option value="watchman">Watchman salary</option><option value="other">Other expense</option></select></div><div class="field"><label>Amount</label><input id="mcExpenseAmount" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="Enter amount"></div><div class="field"><label>Date</label><input id="mcExpenseDate" type="date" required value="${todayKey()}"></div><div class="field"><label>Description (optional)</label><input id="mcExpenseDescription" placeholder="e.g. August electricity bill"></div><div class="field"><label>Notes (optional)</label><textarea id="mcExpenseNotes"></textarea></div><div class="actions"><button class="secondary" type="button" data-close>Cancel</button><button class="primary" type="submit">Save expense</button></div></form>`);
+      openModal(`<div class="sheethead"><h3>Add apartment expense</h3><button class="x" data-close>×</button></div><form id="mcExpenseForm"><div class="field"><label>Expense type</label><select id="mcExpenseCategory"><option value="electricity">Electricity bill</option><option value="water">Water bill</option><option value="watchman">Watchman salary</option><option value="other">Other expense</option></select></div><div class="field"><label>Amount</label><input id="mcExpenseAmount" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="Enter amount"></div><div class="grid2"><div class="field"><label>Date</label><input id="mcExpenseDate" type="date" required value="${todayKey()}"></div><div class="field"><label>Payment mode</label><select id="mcExpensePayment"><option value="">Not specified</option><option value="cash">Cash</option><option value="online">Online</option><option value="other">Other</option></select></div></div><div class="field"><label>Description (optional)</label><input id="mcExpenseDescription" placeholder="e.g. August electricity bill"></div><div class="field"><label>Notes (optional)</label><textarea id="mcExpenseNotes"></textarea></div><div class="actions"><button class="secondary" type="button" data-close>Cancel</button><button class="primary" type="submit">Save expense</button></div></form>`);
       $('#mcExpenseCategory').onchange=e=>{if(e.target.value==='watchman'){$('#mcExpenseAmount').value='8500';if(!$('#mcExpenseDescription').value)$('#mcExpenseDescription').value='Watchman salary'}};
-      $('#mcExpenseForm').onsubmit=async e=>{e.preventDefault();const amount=Number($('#mcExpenseAmount').value);if(!Number.isFinite(amount)||amount<0){showToast('Enter a valid amount');return}const payload={user_id:user.id,expense_date:$('#mcExpenseDate').value,category:$('#mcExpenseCategory').value,description:$('#mcExpenseDescription').value.trim()||null,amount,notes:$('#mcExpenseNotes').value.trim()||null,updated_at:new Date().toISOString()};const res=await supabase.from('mc_expenses').insert(payload);if(res.error){showToast(res.error.message);return}closeModal();await refreshMCData();renderMC();showToast('Expense added')};
+      $('#mcExpenseForm').onsubmit=async e=>{e.preventDefault();const amount=Number($('#mcExpenseAmount').value);if(!Number.isFinite(amount)||amount<0){showToast('Enter a valid amount');return}const payload={user_id:user.id,expense_date:$('#mcExpenseDate').value,category:$('#mcExpenseCategory').value,description:$('#mcExpenseDescription').value.trim()||null,amount,payment_mode:$('#mcExpensePayment').value||null,notes:$('#mcExpenseNotes').value.trim()||null,updated_at:new Date().toISOString()};const res=await supabase.from('mc_expenses').insert(payload);if(res.error){showToast(res.error.message);return}closeModal();await refreshMCData();renderMC();showToast('Expense added')};
+    }
+
+
+    function expenseMonthRange(){
+      const [y,m]=expenseMonthValue.split('-').map(Number);const last=new Date(y,m,0).getDate();
+      return {start:`${expenseMonthValue}-01`,end:`${expenseMonthValue}-${String(last).padStart(2,'0')}`};
+    }
+    const expenseCategoryLabel=c=>({food:'Food / Dining',groceries:'Groceries',fuel:'Fuel / Travel',shopping:'Shopping',bills:'Bills',marketing:'Marketing / Ads',software:'Software / Subscription',freelancer:'Freelancer / Team',medical:'Medical',office:'Office / Business',other:'Other'}[c]||c);
+    function monthlyExpenses(){const r=expenseMonthRange();return expenses.filter(e=>e.expense_date>=r.start&&e.expense_date<=r.end)}
+    function renderExpenses(){
+      const list=monthlyExpenses();const total=list.reduce((s,e)=>s+Number(e.amount||0),0);const personal=list.filter(e=>e.scope==='personal').reduce((s,e)=>s+Number(e.amount||0),0);const business=list.filter(e=>e.scope==='business').reduce((s,e)=>s+Number(e.amount||0),0);const cash=list.filter(e=>e.payment_mode==='cash').reduce((s,e)=>s+Number(e.amount||0),0);const online=list.filter(e=>e.payment_mode==='online').reduce((s,e)=>s+Number(e.amount||0),0);const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${expenseMonthValue}-01T12:00:00`));
+      const rows=list.length?list.map(e=>`<div class="expense-item"><div class="expense-icon">${e.category==='fuel'?iconSvg('bolt'):e.category==='bills'?iconSvg('receipt'):e.category==='marketing'?iconSvg('megaphone'):e.category==='software'?iconSvg('laptop'):iconSvg('wallet')}</div><div class="expense-main"><div class="expense-title">${escapeHtml(e.description||expenseCategoryLabel(e.category))}<span class="scope-chip">${escapeHtml(e.scope)}</span></div><div class="expense-meta">${escapeHtml(expenseCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}${e.payment_mode?` · ${escapeHtml(e.payment_mode)}`:''}</div></div><div class="expense-amount">${money(e.amount)}</div><button class="expense-delete" data-expense-delete="${e.id}" type="button" title="Delete expense">×</button></div>`).join(''):`<div class="simple-empty">No personal or business expenses recorded for ${escapeHtml(monthLabel)}.</div>`;
+      main.innerHTML=`<button class="backbtn" id="expenseBack">← Today</button><div class="expense-head"><div><h2>Expense Tracker</h2><p>Personal & business spending. Mehak Classic expenses stay in MC.</p></div><input id="expenseMonth" class="expense-month" type="month" value="${expenseMonthValue}"></div><div class="expense-summary"><div class="expense-summary-card"><div class="expense-summary-value">${money(total)}</div><div class="expense-summary-label">Total spent</div></div><div class="expense-summary-card"><div class="expense-summary-value">${money(personal)}</div><div class="expense-summary-label">Personal</div></div><div class="expense-summary-card"><div class="expense-summary-value">${money(business)}</div><div class="expense-summary-label">Business</div></div></div><div class="mc-statusline">Cash ${money(cash)} · Online ${money(online)}</div><div class="expense-toolbar"><button id="manualExpense" class="primary" type="button">+ Add expense</button><button id="voiceExpense" class="fab" type="button">🎤 Tell TAAZ an expense</button></div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)}</h3></div><div class="expense-list">${rows}</div></section>`;
+      $('#expenseBack').onclick=()=>setPage('today');$('#expenseMonth').onchange=e=>{expenseMonthValue=e.target.value||expenseMonthValue;renderExpenses()};$('#manualExpense').onclick=()=>openExpenseModal();$('#voiceExpense').onclick=startVoiceExpense;
+      $$('[data-expense-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this expense?'))return;const res=await supabase.from('expenses').delete().eq('id',b.dataset.expenseDelete);if(res.error){showToast(res.error.message);return}await refreshData();renderExpenses();showToast('Expense deleted')});
+    }
+
+    function openExpenseModal(prefill={}){
+      const scope=prefill.scope||'';const payment=prefill.payment_mode||'';const category=prefill.category||'other';
+      openModal(`<div class="sheethead"><h3>${prefill.source==='voice'?'Confirm expense':'Add expense'}</h3><button class="x" data-close>×</button></div>${prefill.transcript?`<div class="voice-transcript">“${escapeHtml(prefill.transcript)}”</div>`:''}<form id="expenseForm"><div class="field"><label>Expense belongs to</label><select id="expenseScope" required><option value="" ${!scope?'selected':''}>Choose…</option><option value="personal" ${scope==='personal'?'selected':''}>Personal</option><option value="business" ${scope==='business'?'selected':''}>Business</option><option value="mc" ${scope==='mc'?'selected':''}>Mehak Classic (MC)</option></select></div><div class="grid2"><div class="field"><label>Amount</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" required value="${prefill.amount??''}" placeholder="₹ amount"></div><div class="field"><label>Payment mode</label><select id="expensePayment"><option value="" ${!payment?'selected':''}>Not specified</option><option value="cash" ${payment==='cash'?'selected':''}>Cash</option><option value="online" ${payment==='online'?'selected':''}>Online</option><option value="other" ${payment==='other'?'selected':''}>Other</option></select></div></div><div class="field"><label>Category</label><select id="expenseCategory"></select></div><div class="field"><label>Date</label><input id="expenseDate" type="date" required value="${prefill.date||todayKey()}"></div><div class="field"><label>What was it for?</label><input id="expenseDescription" required value="${escapeHtml(prefill.description||'')}" placeholder="e.g. Petrol, Meta ads, electricity bill"></div><div class="field"><label>Notes (optional)</label><textarea id="expenseNotes">${escapeHtml(prefill.notes||'')}</textarea></div><div class="actions"><button class="secondary" type="button" data-close>Cancel</button><button class="primary" type="submit">Save expense</button></div></form>`);
+      const renderCats=()=>{const s=$('#expenseScope').value;const cats=s==='mc'?[['electricity','Electricity bill'],['water','Water bill'],['watchman','Watchman salary'],['other','Other expense']]:[['food','Food / Dining'],['groceries','Groceries'],['fuel','Fuel / Travel'],['shopping','Shopping'],['bills','Bills'],['marketing','Marketing / Ads'],['software','Software / Subscription'],['freelancer','Freelancer / Team'],['medical','Medical'],['office','Office / Business'],['other','Other']];const wanted=s==='mc'?(category==='watchman'||category==='water'||category==='electricity'?category:'other'):category;$('#expenseCategory').innerHTML=cats.map(([v,l])=>`<option value="${v}" ${wanted===v?'selected':''}>${l}</option>`).join('');if(s==='mc'&&$('#expenseCategory').value==='watchman'&&!$('#expenseAmount').value)$('#expenseAmount').value='8500'};
+      $('#expenseScope').onchange=renderCats;renderCats();$('#expenseCategory').onchange=e=>{if($('#expenseScope').value==='mc'&&e.target.value==='watchman'){if(!$('#expenseAmount').value)$('#expenseAmount').value='8500';if(!$('#expenseDescription').value)$('#expenseDescription').value='Watchman salary'}};
+      $('#expenseForm').onsubmit=async e=>{e.preventDefault();const scope=$('#expenseScope').value;const amount=Number($('#expenseAmount').value);if(!scope){showToast('Choose Personal, Business or Mehak Classic');return}if(!Number.isFinite(amount)||amount<=0){showToast('Enter a valid amount');return}const date=$('#expenseDate').value;const desc=$('#expenseDescription').value.trim();const mode=$('#expensePayment').value||null;let res;if(scope==='mc'){res=await supabase.from('mc_expenses').insert({user_id:user.id,expense_date:date,category:$('#expenseCategory').value,description:desc,amount,payment_mode:mode,notes:$('#expenseNotes').value.trim()||null,updated_at:new Date().toISOString()})}else{res=await supabase.from('expenses').insert({user_id:user.id,expense_date:date,scope,category:$('#expenseCategory').value,description:desc,amount,payment_mode:mode,notes:$('#expenseNotes').value.trim()||null,source:prefill.source==='voice'?'voice':'manual',updated_at:new Date().toISOString()})}if(res.error){showToast(res.error.message);return}closeModal();await refreshData();if(scope==='mc'){await refreshMCData();showToast('Saved under Mehak Classic')}else{showToast('Expense recorded')}if(currentPage==='expenses')renderExpenses();};
+    }
+
+    function parseExpenseVoice(text){
+      const raw=text.trim(),lower=raw.toLowerCase();
+      const amountMatch=lower.match(/(?:₹|rs\.?|inr|rupees?)?\s*([0-9][0-9,]*(?:\.\d{1,2})?)/i);const amount=amountMatch?Number(amountMatch[1].replace(/,/g,'')):'';
+      let scope='';if(/\b(mehak|mahek|mehak classic|mc|apartment|maintenance|watchman)\b/.test(lower))scope='mc';else if(/\b(meta|google ads?|ads?|marketing|client|business|office|software|subscription|freelancer|team)\b/.test(lower))scope='business';else if(/\b(grocer|food|lunch|dinner|breakfast|petrol|fuel|shopping|medical|medicine|personal)\b/.test(lower))scope='personal';
+      let category='other';if(/watchman/.test(lower))category='watchman';else if(/electric/.test(lower))category=scope==='mc'?'electricity':'bills';else if(/water/.test(lower))category=scope==='mc'?'water':'bills';else if(/grocer/.test(lower))category='groceries';else if(/petrol|fuel|cab|auto|uber|ola|travel/.test(lower))category='fuel';else if(/meta|google ads?|advertis|marketing/.test(lower))category='marketing';else if(/software|subscription|hosting|domain/.test(lower))category='software';else if(/freelancer|salary|team/.test(lower)&&scope!=='mc')category='freelancer';else if(/food|lunch|dinner|breakfast|restaurant|chai|coffee/.test(lower))category='food';else if(/medical|medicine|doctor|pharmacy/.test(lower))category='medical';else if(/shopping/.test(lower))category='shopping';else if(/bill/.test(lower))category='bills';
+      let payment_mode='';if(/\bcash\b/.test(lower))payment_mode='cash';else if(/\bonline\b|upi|card|gpay|google pay|phonepe|paytm|bank/.test(lower))payment_mode='online';
+      let date=todayKey();if(/\byesterday\b/.test(lower)){const d=new Date();d.setDate(d.getDate()-1);date=localDateKey(d)}
+      const description=raw.replace(/\b(i|we)\s+(spent|paid)\b/ig,'').replace(/\b(spent|paid|expense|rupees?|inr|cash|online|today|yesterday)\b/ig,'').replace(/₹?\s*[0-9][0-9,]*(?:\.\d{1,2})?/g,'').replace(/\s+/g,' ').trim()||'Expense';
+      return {amount,scope,category,payment_mode,date,description,source:'voice',transcript:raw};
+    }
+
+    function startVoiceExpense(){
+      listenOnce('Tell me the expense, amount and whether it is personal, business or Mehak Classic.',text=>openExpenseModal(parseExpenseVoice(text)));
     }
 
     function renderSettings(){
-      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div><div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div><div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div><div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
-      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#signOut').onclick=async()=>{await supabase.auth.signOut()};
+      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div><div class="settings-card"><h3>Voice Assistant</h3><p>Uses your device/browser speech features. No paid AI API is required. Voice commands always ask for confirmation before changing a task or saving an interpreted expense.</p><div class="actions"><button id="settingsVoice" class="primary" type="button">Test voice assistant</button><button id="settingsSpeak" class="secondary" type="button">Speak daily brief</button></div></div><div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div><div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div><div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
+      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#settingsVoice').onclick=startVoiceAssistant;$('#settingsSpeak').onclick=()=>speakText(makeSpokenBrief());$('#signOut').onclick=async()=>{stopSpeaking();await supabase.auth.signOut()};
     }
 
     function bindTaskActions(){
@@ -434,6 +514,50 @@
       if(existing)$('#deleteContent').onclick=async()=>{if(confirm('Delete this content item?')){await supabase.from('content_schedule').delete().eq('id',existing.id);closeModal();await refreshData();render();showToast('Content deleted')}};
     }
 
+
+    function speakText(text){
+      if(!('speechSynthesis' in window)){showToast('Text-to-speech is not supported in this browser.');return}
+      window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-IN';u.rate=.94;u.pitch=1;window.speechSynthesis.speak(u);
+    }
+    function stopSpeaking(){if('speechSynthesis' in window)window.speechSynthesis.cancel()}
+    function makeSpokenBrief(){
+      const over=tasks.filter(isOverdue);const due=tasks.filter(t=>isToday(t)&&!isDone(t));const posts=contents.filter(c=>c.scheduled_at&&localDateKey(c.scheduled_at)===todayKey()&&c.status!=='published'&&c.status!=='skipped');let parts=[];
+      parts.push(`Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, Azhar.`);parts.push(`You have ${over.length} overdue ${over.length===1?'task':'tasks'}, ${due.length} ${due.length===1?'task':'tasks'} due today, and ${posts.length} ${posts.length===1?'post':'posts'} scheduled today.`);
+      if(over.length){parts.push('Overdue:');over.slice(0,5).forEach(t=>parts.push(`${clientName(t.client_id)}. ${t.title}.`))}if(due.length){parts.push('For today:');due.slice(0,6).forEach(t=>parts.push(`${clientName(t.client_id)}. ${t.title}.`))}if(posts.length){parts.push('Content today:');posts.slice(0,5).forEach(c=>parts.push(`${clientName(c.client_id)}. ${c.title}.`))}if(!over.length&&!due.length&&!posts.length)parts.push('Your work calendar is clear for today.');return parts.join(' ');
+    }
+    function listenOnce(prompt,callback){
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showToast('Voice recognition is not supported here. Use Chrome on Android or desktop.');return}
+      if(activeRecognition){try{activeRecognition.abort()}catch(e){}}const r=new SR();activeRecognition=r;r.lang='en-IN';r.interimResults=false;r.maxAlternatives=1;showToast('Listening…');if(prompt)showToast(prompt);r.onresult=e=>{activeRecognition=null;const text=e.results[0][0].transcript;showToast(`Heard: ${text}`);callback(text)};r.onerror=e=>{activeRecognition=null;if(e.error!=='aborted')showToast('I could not hear that. Please try again.')};r.onend=()=>{if(activeRecognition===r)activeRecognition=null};setTimeout(()=>{try{r.start()}catch(e){showToast('Microphone could not start.')}} ,prompt?650:0);
+    }
+    function startVoiceAssistant(){
+      stopSpeaking();listenOnce('',handleVoiceCommand);
+    }
+    function handleVoiceCommand(text){
+      const lower=text.toLowerCase().trim();
+      if(/\b(stop|stop speaking|be quiet)\b/.test(lower)){stopSpeaking();return}
+      if(/\b(expense|spent|paid|rupees?|₹|inr)\b/.test(lower)&&!/mark.*paid/.test(lower)){openExpenseModal(parseExpenseVoice(text));return}
+      if(/\b(add task|new task|remind me)\b/.test(lower)){openTaskModal(null,parseVoice(text.replace(/^(add task|new task|remind me)\s*/i,'')));return}
+      if(/\b(mark|complete|completed|done)\b/.test(lower)&&/\b(task|done|complete|completed)\b/.test(lower)){handleVoiceTaskDone(text);return}
+      if(/\b(tomorrow).*(post|content)|\b(post|content).*(tomorrow)\b/.test(lower)){const tomorrow=contents.filter(c=>c.scheduled_at&&localDateKey(c.scheduled_at)===tomorrowKey()&&c.status!=='published'&&c.status!=='skipped');speakText(tomorrow.length?`You have ${tomorrow.length} content items tomorrow. `+tomorrow.map(c=>`${clientName(c.client_id)}, ${c.title}.`).join(' '):'You have no content scheduled for tomorrow.');return}
+      if(/\boverdue\b/.test(lower)){const over=tasks.filter(isOverdue);speakText(over.length?`You have ${over.length} overdue tasks. `+over.slice(0,7).map(t=>`${clientName(t.client_id)}, ${t.title}.`).join(' '):'You have no overdue tasks.');return}
+      if(/how much.*spend|how much.*spent|expense total|spending/.test(lower)){speakExpenseAnswer(lower);return}
+      if(/\b(pending|today|brief|tasks?)\b/.test(lower)){speakText(makeSpokenBrief());return}
+      openModal(`<div class="sheethead"><h3>I heard you</h3><button class="x" data-close>×</button></div><div class="voice-transcript">“${escapeHtml(text)}”</div><div class="voice-help">Try commands such as “What is pending today?”, “Mark Dr Deepthi task done”, “Add task call Vishnu tomorrow”, or “Spent 850 on petrol cash”.</div><div class="actions"><button class="secondary" data-close type="button">Close</button><button id="voiceTryAgain" class="primary" type="button">Try again</button></div>`);$('#voiceTryAgain').onclick=()=>{closeModal();startVoiceAssistant()};
+    }
+    function voiceTaskCandidates(text){
+      const lower=text.toLowerCase();let list=tasks.filter(t=>!isDone(t)&&t.status!=='cancelled');const clientMap=[['deepthi','Dr Deepthi'],['zuven','ZUVEN Tech'],['vishnu','Vishnu LinkedIn'],['praveen','Praveen LinkedIn'],['brainy','BrainyBots'],['qubisec','Qubisec']];for(const [k,n] of clientMap){if(lower.includes(k)){const cid=clients.find(c=>c.name===n)?.id;list=list.filter(t=>t.client_id===cid);break}}
+      const ordinal=lower.match(/\b(first|second|third|1st|2nd|3rd)\b/);if(ordinal){const today=tasks.filter(t=>isToday(t)&&!isDone(t));const i=/first|1st/.test(ordinal[1])?0:/second|2nd/.test(ordinal[1])?1:2;return today[i]?[today[i]]:[]}
+      const stop=new Set(['mark','task','tasks','done','complete','completed','the','as','is','today','my','this','please','deepthi','zuven','vishnu','praveen','brainy','brainybots','qubisec']);const words=lower.replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3&&!stop.has(w));if(words.length){list=list.map(t=>({t,score:words.reduce((s,w)=>s+(t.title.toLowerCase().includes(w)?1:0),0)+(isToday(t)?0.4:0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).map(x=>x.t)}else list=list.sort((a,b)=>(isToday(b)?1:0)-(isToday(a)?1:0));return list.slice(0,4);
+    }
+    function handleVoiceTaskDone(text){
+      const matches=voiceTaskCandidates(text);if(!matches.length){speakText('I could not find a matching open task.');showToast('No matching open task found');return}if(matches.length===1){confirmVoiceTaskDone(matches[0]);return}openModal(`<div class="sheethead"><h3>Which task is done?</h3><button class="x" data-close>×</button></div><div class="voice-choice">${matches.map(t=>`<button type="button" data-voice-task="${t.id}"><span>${escapeHtml(clientName(t.client_id))}</span><br><small>${escapeHtml(t.title)}</small></button>`).join('')}</div>`);$$('[data-voice-task]').forEach(b=>b.onclick=()=>confirmVoiceTaskDone(tasks.find(t=>t.id===b.dataset.voiceTask)));
+    }
+    function confirmVoiceTaskDone(task){if(!task)return;openModal(`<div class="sheethead"><h3>Mark task done?</h3><button class="x" data-close>×</button></div><div class="voice-transcript">${escapeHtml(clientName(task.client_id))} — ${escapeHtml(task.title)}</div><div class="actions"><button class="secondary" data-close type="button">Cancel</button><button id="voiceConfirmDone" class="primary" type="button">Yes, mark done</button></div>`);$('#voiceConfirmDone').onclick=async()=>{const res=await supabase.from('tasks').update({status:'done',completed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',task.id);if(res.error){showToast(res.error.message);return}closeModal();await refreshData();render();speakText('Done. I marked the task as completed.');showToast('Task completed')};}
+    async function speakExpenseAnswer(lower){
+      if(/mehak|mahek|\bmc\b|apartment/.test(lower)){const now=new Date(),start=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`,end=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(new Date(now.getFullYear(),now.getMonth()+1,0).getDate()).padStart(2,'0')}`;const {data,error}=await supabase.from('mc_expenses').select('amount').gte('expense_date',start).lte('expense_date',end);if(error){showToast(error.message);return}const total=(data||[]).reduce((s,e)=>s+Number(e.amount||0),0);speakText(`Mehak Classic expenses this month are ${money(total)}.`);return}
+      const list=monthlyExpenses();let filtered=list;if(/business/.test(lower))filtered=list.filter(e=>e.scope==='business');else if(/personal/.test(lower))filtered=list.filter(e=>e.scope==='personal');const categoryTests=[['marketing',/ad|advert|marketing/],['fuel',/petrol|fuel|travel/],['groceries',/grocer/],['software',/software|subscription/],['food',/food|lunch|dinner|restaurant/]];for(const [cat,re] of categoryTests)if(re.test(lower))filtered=filtered.filter(e=>e.category===cat);const total=filtered.reduce((s,e)=>s+Number(e.amount||0),0);speakText(`You spent ${money(total)} for that selection this month.`);
+    }
+
     function parseVoice(text){
       let raw=text.trim(), lower=raw.toLowerCase(), client_id=null;
       const map=[['deepthi','Dr Deepthi'],['zuven','ZUVEN Tech'],['vishnu','Vishnu LinkedIn'],['praveen','Praveen LinkedIn'],['brainybots','BrainyBots'],['brainy bots','BrainyBots'],['qubisec','Qubisec']];
@@ -445,11 +569,7 @@
       return {title,date,time,client_id,source:'voice'};
     }
 
-    function startVoiceTask(){
-      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showToast('Voice entry is not supported in this browser. Try Chrome on your Samsung phone.');return}
-      const r=new SR();r.lang='en-IN';r.interimResults=false;r.maxAlternatives=1;showToast('Listening… say the task, client and time');
-      r.onresult=e=>{const text=e.results[0][0].transcript;showToast(`Heard: ${text}`);openTaskModal(null,parseVoice(text))};r.onerror=()=>showToast('I could not hear that. Please try again.');r.start();
-    }
+    function startVoiceTask(){listenOnce('Say the task, client and time.',text=>openTaskModal(null,parseVoice(text)))}
 
     function makeDailyBrief(){
       const over=tasks.filter(isOverdue);const due=tasks.filter(t=>isToday(t)&&!isDone(t));const posts=contents.filter(c=>c.scheduled_at&&localDateKey(c.scheduled_at)===todayKey()&&c.status!=='published'&&c.status!=='skipped');
