@@ -237,18 +237,27 @@
 
 
     const APP_URL='https://qubise-bb8.github.io/marketing-agent/';
-    const recoveryInUrl=()=>window.location.hash.includes('type=recovery')||new URLSearchParams(window.location.search).get('type')==='recovery';
+    const RESET_URL=APP_URL+'?mode=password-reset';
+    const RESET_FLAG='taazPasswordResetPending';
+    const recoveryInUrl=()=>{
+      const q=new URLSearchParams(window.location.search);
+      return window.location.hash.includes('type=recovery')||q.get('type')==='recovery'||q.get('mode')==='password-reset';
+    };
+    let recoveryMode=recoveryInUrl()||localStorage.getItem(RESET_FLAG)==='1';
 
     async function init(){
       hydratePremiumIcons();
       if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./sw.js'); }catch(e){} }
-      const {data:{session:s}}=await supabase.auth.getSession();
-      if(s && recoveryInUrl()) showPasswordReset(s); else if(s) await enterApp(s); else showAuth();
       supabase.auth.onAuthStateChange(async (event,s2)=>{
-        if(event==='PASSWORD_RECOVERY' && s2){showPasswordReset(s2);return}
+        if(event==='PASSWORD_RECOVERY' && s2){
+          recoveryMode=true;localStorage.setItem(RESET_FLAG,'1');showPasswordReset(s2);return;
+        }
+        if(recoveryMode && s2){showPasswordReset(s2);return}
         if(s2 && (!session || s2.user.id!==session.user.id)) await enterApp(s2);
         if(!s2){session=null;user=null;showAuth()}
       });
+      const {data:{session:s}}=await supabase.auth.getSession();
+      if(recoveryMode && s) showPasswordReset(s); else if(s) await enterApp(s); else showAuth(recoveryMode?'Reset link opened. Finishing secure sign-in…':'');
       setInterval(checkReminders,30000);
     }
 
@@ -267,7 +276,8 @@
         const btn=$('#saveNewPassword');btn.disabled=true;btn.textContent='Saving…';
         const {error}=await supabase.auth.updateUser({password:p1});
         if(error){btn.disabled=false;btn.textContent='Save new password';box.textContent=error.message;box.classList.remove('hidden');return}
-        await supabase.auth.signOut();history.replaceState({},document.title,window.location.pathname);location.reload();
+        localStorage.removeItem(RESET_FLAG);recoveryMode=false;
+        await supabase.auth.signOut();location.replace(APP_URL);
       };
     }
     async function enterApp(s){session=s;user=s.user;authView.classList.add('hidden');appView.classList.remove('hidden');await ensureStarterData();await refreshData();render()}
@@ -493,8 +503,22 @@
     }
 
     function renderSettings(){
-      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div><div class="settings-card"><h3>Voice Assistant</h3><p>Uses your device/browser speech features. No paid AI API is required. Voice commands always ask for confirmation before changing a task or saving an interpreted expense.</p><div class="actions"><button id="settingsVoice" class="primary" type="button">Test voice assistant</button><button id="settingsSpeak" class="secondary" type="button">Speak daily brief</button></div></div><div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div><div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div><div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
-      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#settingsVoice').onclick=startVoiceAssistant;$('#settingsSpeak').onclick=()=>speakText(makeSpokenBrief());$('#signOut').onclick=async()=>{stopSpeaking();await supabase.auth.signOut()};
+      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div><div class="settings-card"><h3>Voice Assistant</h3><p>Uses your device/browser speech features. No paid AI API is required. Voice commands always ask for confirmation before changing a task or saving an interpreted expense.</p><div class="actions"><button id="settingsVoice" class="primary" type="button">Test voice assistant</button><button id="settingsSpeak" class="secondary" type="button">Speak daily brief</button></div></div><div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div><div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div><div class="settings-card"><h3>Security</h3><p>Change the password for your TAAZ account while you are signed in.</p><button id="changePassword" class="secondary" type="button">Change password</button></div><div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
+      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#settingsVoice').onclick=startVoiceAssistant;$('#settingsSpeak').onclick=()=>speakText(makeSpokenBrief());$('#changePassword').onclick=openChangePasswordModal;$('#signOut').onclick=async()=>{stopSpeaking();await supabase.auth.signOut()};
+    }
+
+    function openChangePasswordModal(){
+      openModal(`<div class="sheethead"><h3>Change password</h3><button class="x" data-close>×</button></div><p class="reset-help">Set a new password for your TAAZ account. You do not need to know the old password because you are already securely signed in.</p><div class="field"><label>New password</label><input id="changePassword1" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></div><div class="field"><label>Confirm new password</label><input id="changePassword2" type="password" minlength="8" autocomplete="new-password" placeholder="Type it again"></div><div id="changePasswordMessage" class="authmsg hidden"></div><div class="actions"><button class="secondary" data-close type="button">Cancel</button><button id="saveChangedPassword" class="primary" type="button">Save new password</button></div>`);
+      $('#saveChangedPassword').onclick=async()=>{
+        const p1=$('#changePassword1').value,p2=$('#changePassword2').value,box=$('#changePasswordMessage'),btn=$('#saveChangedPassword');
+        box.classList.add('hidden');
+        if(p1.length<8){box.textContent='Use at least 8 characters.';box.classList.remove('hidden');return}
+        if(p1!==p2){box.textContent='The two passwords do not match.';box.classList.remove('hidden');return}
+        btn.disabled=true;btn.textContent='Saving…';
+        const {error}=await supabase.auth.updateUser({password:p1});
+        if(error){btn.disabled=false;btn.textContent='Save new password';box.textContent=error.message;box.classList.remove('hidden');return}
+        localStorage.removeItem(RESET_FLAG);recoveryMode=false;closeModal();showToast('Password changed successfully.');
+      };
     }
 
     function bindTaskActions(){
@@ -616,9 +640,11 @@
       const email=$('#authEmail').value.trim(),box=$('#authMessage');
       if(!email){box.textContent='Enter your email address first, then tap Forgot password.';box.classList.remove('hidden');$('#authEmail').focus();return}
       $('#authForgot').disabled=true;$('#authForgot').textContent='Sending reset email…';
-      const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:APP_URL});
+      localStorage.setItem(RESET_FLAG,'1');recoveryMode=true;
+      const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:RESET_URL});
       $('#authForgot').disabled=false;$('#authForgot').textContent='Forgot password?';box.classList.remove('hidden');
-      box.textContent=error?error.message:'Reset email sent. Open the email from Supabase and tap the reset link. It will bring you back to TAAZ to choose a new password.';
+      if(error){localStorage.removeItem(RESET_FLAG);recoveryMode=false;box.textContent=error.message;return}
+      box.textContent='Reset email sent. Open the email from Supabase and tap the reset link. TAAZ will open directly on the Choose a new password screen.';
     };
     $('#authForm').onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;$('#authSubmit').disabled=true;$('#authSubmit').textContent='Please wait…';let result;if(authMode==='signin') result=await supabase.auth.signInWithPassword({email,password}); else result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:APP_URL}});$('#authSubmit').disabled=false;$('#authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';const box=$('#authMessage');box.classList.remove('hidden');if(result.error){box.textContent=result.error.message;return}if(authMode==='signup'&&!result.data.session){box.textContent='Account created. Please check your email and confirm the sign-in link, then return here.'}else box.textContent='Signed in.'};
 
