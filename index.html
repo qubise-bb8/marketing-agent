@@ -77,6 +77,9 @@
 
     @media(max-width:650px){.v9-actions{grid-template-columns:repeat(2,1fr)}.expense-summary{grid-template-columns:1fr}.brand small{display:none}.content{padding:13px}.stat-main{gap:6px}.stat-label{font-size:13px}.navbtn{font-size:9px}.navbtn .icon-shell{width:34px;height:34px}.premium-icon-svg{width:27px;height:27px}}
 
+  
+    .voice-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.voice-settings-grid .field{margin-bottom:0}.voice-range-wrap{display:flex;align-items:center;gap:10px}.voice-range-wrap input[type="range"]{width:100%;min-width:0}.voice-readout{min-width:48px;text-align:center;font-size:12px;font-weight:500;color:#0b8fa8;background:#e9fbfd;border-radius:999px;padding:5px 8px}.voice-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:9px}.voice-active{outline:3px solid rgba(255,194,0,.35);outline-offset:2px}
+    @media(max-width:520px){.voice-settings-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -124,7 +127,7 @@
     const authView=$('#authView'), appView=$('#appView'), main=$('#main'), modal=$('#modal'), sheet=$('#sheet'), toast=$('#toast');
     let session=null, user=null, clients=[], tasks=[], contents=[], currentPage='today', selectedClientId=null, authMode='signin', taskFilter='today';
     let mcUnits=[], mcPayments=[], mcExpenses=[], mcMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
-    let expenses=[], expenseMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, activeRecognition=null;
+    let expenses=[], expenseMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, activeRecognition=null, activeUtterance=null;
 
     const escapeHtml = (s='') => String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     const localDateKey = d => { const x=new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}` };
@@ -247,6 +250,7 @@
 
     async function init(){
       hydratePremiumIcons();
+      if('speechSynthesis' in window&&window.speechSynthesis.addEventListener){window.speechSynthesis.addEventListener('voiceschanged',setupVoiceSettingsControls)}
       if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./sw.js'); }catch(e){} }
       supabase.auth.onAuthStateChange(async (event,s2)=>{
         if(event==='PASSWORD_RECOVERY' && s2){
@@ -360,8 +364,8 @@
         <section class="section"><div class="section-head"><h3>Priority work</h3></div>${next.length?next.map(taskCard).join(''):`<div class="empty"><b>No urgent tasks</b>Add a task or use the microphone to plan your day.</div>`}</section>
         <section class="section"><div class="section-head"><h3>Content scheduled today</h3><button class="text-btn" id="addContentToday">+ Add</button></div>${todayContent.length?todayContent.map(c=>contentCard(c,true)).join(''):`<div class="empty"><b>No content scheduled today</b>Your calendar is clear.</div>`}</section>
         <section class="section"><div class="section-head"><h3>Daily brief</h3></div><div class="brief">${escapeHtml(makeDailyBrief())}</div><button id="copyBrief" class="secondary" style="width:100%;margin-top:9px">Copy brief for ChatGPT</button></section>`;
-      $('#quickTask').onclick=()=>openTaskModal(); $('#voiceAssistant').onclick=startVoiceAssistant; $('#speakBrief').onclick=()=>speakText(makeSpokenBrief()); $('#quickExpense').onclick=()=>setPage('expenses'); $('#addContentToday').onclick=()=>openContentModal(todayKey()); $('#copyBrief').onclick=copyBrief;
-      bindTaskActions();bindContentActions();
+      $('#quickTask').onclick=()=>openTaskModal(); $('#voiceAssistant').onclick=startVoiceAssistant; $('#speakBrief').onclick=toggleDailyBrief; $('#quickExpense').onclick=()=>setPage('expenses'); $('#addContentToday').onclick=()=>openContentModal(todayKey()); $('#copyBrief').onclick=copyBrief;
+      bindTaskActions();bindContentActions();updateVoiceUI();
     }
 
     function taskCard(t){
@@ -475,8 +479,8 @@
       const list=monthlyExpenses();const total=list.reduce((s,e)=>s+Number(e.amount||0),0);const personal=list.filter(e=>e.scope==='personal').reduce((s,e)=>s+Number(e.amount||0),0);const business=list.filter(e=>e.scope==='business').reduce((s,e)=>s+Number(e.amount||0),0);const cash=list.filter(e=>e.payment_mode==='cash').reduce((s,e)=>s+Number(e.amount||0),0);const online=list.filter(e=>e.payment_mode==='online').reduce((s,e)=>s+Number(e.amount||0),0);const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${expenseMonthValue}-01T12:00:00`));
       const rows=list.length?list.map(e=>`<div class="expense-item"><div class="expense-icon">${e.category==='fuel'?iconSvg('bolt'):e.category==='bills'?iconSvg('receipt'):e.category==='marketing'?iconSvg('megaphone'):e.category==='software'?iconSvg('laptop'):iconSvg('wallet')}</div><div class="expense-main"><div class="expense-title">${escapeHtml(e.description||expenseCategoryLabel(e.category))}<span class="scope-chip">${escapeHtml(e.scope)}</span></div><div class="expense-meta">${escapeHtml(expenseCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}${e.payment_mode?` · ${escapeHtml(e.payment_mode)}`:''}</div></div><div class="expense-amount">${money(e.amount)}</div><button class="expense-delete" data-expense-delete="${e.id}" type="button" title="Delete expense">×</button></div>`).join(''):`<div class="simple-empty">No personal or business expenses recorded for ${escapeHtml(monthLabel)}.</div>`;
       main.innerHTML=`<button class="backbtn" id="expenseBack">← Today</button><div class="expense-head"><div><h2>Expense Tracker</h2><p>Personal & business spending. Mehak Classic expenses stay in MC.</p></div><input id="expenseMonth" class="expense-month" type="month" value="${expenseMonthValue}"></div><div class="expense-summary"><div class="expense-summary-card"><div class="expense-summary-value">${money(total)}</div><div class="expense-summary-label">Total spent</div></div><div class="expense-summary-card"><div class="expense-summary-value">${money(personal)}</div><div class="expense-summary-label">Personal</div></div><div class="expense-summary-card"><div class="expense-summary-value">${money(business)}</div><div class="expense-summary-label">Business</div></div></div><div class="mc-statusline">Cash ${money(cash)} · Online ${money(online)}</div><div class="expense-toolbar"><button id="manualExpense" class="primary" type="button">+ Add expense</button><button id="voiceExpense" class="fab" type="button">🎤 Tell TAAZ an expense</button></div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)}</h3></div><div class="expense-list">${rows}</div></section>`;
-      $('#expenseBack').onclick=()=>setPage('today');$('#expenseMonth').onchange=e=>{expenseMonthValue=e.target.value||expenseMonthValue;renderExpenses()};$('#manualExpense').onclick=()=>openExpenseModal();$('#voiceExpense').onclick=startVoiceExpense;
-      $$('[data-expense-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this expense?'))return;const res=await supabase.from('expenses').delete().eq('id',b.dataset.expenseDelete);if(res.error){showToast(res.error.message);return}await refreshData();renderExpenses();showToast('Expense deleted')});
+      $('#expenseBack').onclick=()=>setPage('today');$('#expenseMonth').onchange=e=>{expenseMonthValue=e.target.value||expenseMonthValue;renderExpenses()};$('#manualExpense').onclick=()=>openExpenseModal();$('#voiceExpense').onclick=startVoiceExpense;updateVoiceUI();
+      $('[data-expense-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this expense?'))return;const res=await supabase.from('expenses').delete().eq('id',b.dataset.expenseDelete);if(res.error){showToast(res.error.message);return}await refreshData();renderExpenses();showToast('Expense deleted')});
     }
 
     function openExpenseModal(prefill={}){
@@ -499,12 +503,29 @@
     }
 
     function startVoiceExpense(){
+      if(activeRecognition){stopListening(true);return}
+      if(isSpeaking()){stopSpeaking();return}
       listenOnce('Tell me the expense, amount and whether it is personal, business or Mehak Classic.',text=>openExpenseModal(parseExpenseVoice(text)));
     }
 
     function renderSettings(){
-      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div><div class="settings-card"><h3>Voice Assistant</h3><p>Uses your device/browser speech features. No paid AI API is required. Voice commands always ask for confirmation before changing a task or saving an interpreted expense.</p><div class="actions"><button id="settingsVoice" class="primary" type="button">Test voice assistant</button><button id="settingsSpeak" class="secondary" type="button">Speak daily brief</button></div></div><div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div><div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div><div class="settings-card"><h3>Security</h3><p>Change the password for your TAAZ account while you are signed in.</p><button id="changePassword" class="secondary" type="button">Change password</button></div><div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
-      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#settingsVoice').onclick=startVoiceAssistant;$('#settingsSpeak').onclick=()=>speakText(makeSpokenBrief());$('#changePassword').onclick=openChangePasswordModal;$('#signOut').onclick=async()=>{stopSpeaking();await supabase.auth.signOut()};
+      main.innerHTML=`<div class="page-title"><h2>Settings</h2></div>
+      <div class="settings-card"><h3>Voice Assistant</h3><p>Tap once to listen. Tap again to stop listening and process what you have said. TAAZ also stops listening automatically when you finish speaking.</p><div class="actions"><button id="settingsVoice" class="primary" type="button">Test voice assistant</button><button id="settingsSpeak" class="secondary" type="button">Speak daily brief</button></div></div>
+      <div class="settings-card"><h3>Voice & narration</h3><p>Choose a voice available on this device, then adjust narration speed and pitch. Different phones may show different voice choices.</p>
+        <div class="field"><label>Voice</label><select id="voiceSelect"><option value="">Device default voice</option></select></div>
+        <div class="voice-settings-grid">
+          <div class="field"><label>Speed</label><div class="voice-range-wrap"><input id="voiceRate" type="range" min="0.75" max="1.40" step="0.05"><span id="voiceRateValue" class="voice-readout">1.10×</span></div></div>
+          <div class="field"><label>Pitch / intonation</label><div class="voice-range-wrap"><input id="voicePitch" type="range" min="0.75" max="1.25" step="0.05"><span id="voicePitchValue" class="voice-readout">1.00</span></div></div>
+        </div>
+        <div class="actions"><button id="previewVoice" class="secondary" type="button">Preview selected voice</button></div>
+        <div class="voice-note">Tip: if the intonation still feels unnatural, changing the voice usually makes a bigger difference than pitch alone.</div>
+      </div>
+      <div class="settings-card"><h3>Phone reminders</h3><p>Allow TAAZ to show reminders while the app is running. Full background push reminders can be added later without changing your task data.</p><button id="notifyBtn" class="secondary">Enable notifications</button></div>
+      <div class="settings-card"><h3>Daily briefing</h3><p>Your preferred daily planning time is 10:00 AM (India time). The app builds your brief automatically from your tasks and content schedule.</p><button id="copyBriefSettings" class="secondary">Copy today's brief</button></div>
+      <div class="settings-card"><h3>Security</h3><p>Change the password for your TAAZ account while you are signed in.</p><button id="changePassword" class="secondary" type="button">Change password</button></div>
+      <div class="settings-card"><h3>Account</h3><p>${escapeHtml(user?.email||'')}</p><button id="signOut" class="danger">Sign out</button></div>`;
+      $('#notifyBtn').onclick=requestNotifications;$('#copyBriefSettings').onclick=copyBrief;$('#settingsVoice').onclick=startVoiceAssistant;$('#settingsSpeak').onclick=toggleDailyBrief;$('#changePassword').onclick=openChangePasswordModal;$('#signOut').onclick=async()=>{stopListening(false);stopSpeaking();await supabase.auth.signOut()};
+      setupVoiceSettingsControls();updateVoiceUI();
     }
 
     function openChangePasswordModal(){
@@ -564,11 +585,94 @@
     }
 
 
+    const VOICE_SETTINGS_KEY='taazVoiceSettingsV1';
+    function getVoiceSettings(){
+      try{
+        const v=JSON.parse(localStorage.getItem(VOICE_SETTINGS_KEY)||'{}');
+        return {voiceKey:v.voiceKey||'',rate:Number(v.rate)||1.10,pitch:Number(v.pitch)||1.00};
+      }catch(e){return {voiceKey:'',rate:1.10,pitch:1.00}}
+    }
+    function saveVoiceSettings(next){
+      const current=getVoiceSettings();const merged={...current,...next};
+      merged.rate=Math.min(1.40,Math.max(.75,Number(merged.rate)||1.10));
+      merged.pitch=Math.min(1.25,Math.max(.75,Number(merged.pitch)||1.00));
+      localStorage.setItem(VOICE_SETTINGS_KEY,JSON.stringify(merged));return merged;
+    }
+    function availableEnglishVoices(){
+      if(!('speechSynthesis' in window))return [];
+      const all=window.speechSynthesis.getVoices()||[];
+      return all.filter(v=>/^en[-_]/i.test(v.lang)||/^English/i.test(v.name)).sort((a,b)=>{
+        const aIN=/en[-_]IN/i.test(a.lang)?0:1,bIN=/en[-_]IN/i.test(b.lang)?0:1;
+        return aIN-bIN||a.name.localeCompare(b.name);
+      });
+    }
+    const voiceKey=v=>(v.voiceURI||v.name)+'|'+(v.lang||'');
+    function chosenVoice(){
+      const settings=getVoiceSettings(),voices=availableEnglishVoices();
+      if(settings.voiceKey){const hit=voices.find(v=>voiceKey(v)===settings.voiceKey);if(hit)return hit}
+      return voices.find(v=>/en[-_]IN/i.test(v.lang))||voices[0]||null;
+    }
+    function isSpeaking(){return !!activeUtterance||(('speechSynthesis' in window)&&window.speechSynthesis.speaking)}
     function speakText(text){
       if(!('speechSynthesis' in window)){showToast('Text-to-speech is not supported in this browser.');return}
-      window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-IN';u.rate=.94;u.pitch=1;window.speechSynthesis.speak(u);
+      stopSpeaking();
+      const settings=getVoiceSettings(),u=new SpeechSynthesisUtterance(text),voice=chosenVoice();
+      if(voice){u.voice=voice;u.lang=voice.lang||'en-IN'}else u.lang='en-IN';
+      u.rate=settings.rate;u.pitch=settings.pitch;u.volume=1;activeUtterance=u;
+      const finish=()=>{if(activeUtterance===u)activeUtterance=null;updateVoiceUI()};
+      u.onstart=updateVoiceUI;u.onend=finish;u.onerror=finish;
+      updateVoiceUI();window.speechSynthesis.speak(u);
     }
-    function stopSpeaking(){if('speechSynthesis' in window)window.speechSynthesis.cancel()}
+    function stopSpeaking(){
+      if('speechSynthesis' in window)window.speechSynthesis.cancel();
+      activeUtterance=null;updateVoiceUI();
+    }
+    function toggleDailyBrief(){
+      if(isSpeaking()){stopSpeaking();showToast('Narration stopped');return}
+      if(activeRecognition)stopListening(false);
+      speakText(makeSpokenBrief());
+    }
+    function stopListening(process=true){
+      const r=activeRecognition;if(!r)return;
+      try{r._taazStopping=true;process?r.stop():r.abort()}catch(e){}
+      if(!process){activeRecognition=null;showToast('Voice listening stopped')}
+      else showToast('Finishing your voice command…');
+      updateVoiceUI();
+    }
+    function updateVoiceUI(){
+      const speaking=isSpeaking(),listening=!!activeRecognition,finishing=!!activeRecognition?._taazStopping;
+      const speakBrief=$('#speakBrief');
+      if(speakBrief){
+        const label=speakBrief.querySelector('span:last-child');
+        if(label)label.textContent=speaking?'Stop narration':'Speak daily brief';
+        speakBrief.classList.toggle('voice-active',speaking);speakBrief.setAttribute('aria-pressed',speaking?'true':'false');
+      }
+      const settingsSpeak=$('#settingsSpeak');
+      if(settingsSpeak){settingsSpeak.textContent=speaking?'Stop narration':'Speak daily brief';settingsSpeak.classList.toggle('voice-active',speaking)}
+      const assistantLabel=finishing?'Finishing…':listening?'Listening… tap to stop':speaking?'Stop voice response':'Voice assistant';
+      const voiceAssistant=$('#voiceAssistant');
+      if(voiceAssistant){
+        const label=voiceAssistant.querySelector('span:last-child');if(label)label.textContent=assistantLabel;
+        voiceAssistant.classList.toggle('voice-active',listening||speaking);voiceAssistant.setAttribute('aria-pressed',(listening||speaking)?'true':'false');
+      }
+      const settingsVoice=$('#settingsVoice');
+      if(settingsVoice){settingsVoice.textContent=finishing?'Finishing…':listening?'Listening… tap to stop':speaking?'Stop voice response':'Test voice assistant';settingsVoice.classList.toggle('voice-active',listening||speaking)}
+      const voiceExpense=$('#voiceExpense');
+      if(voiceExpense){voiceExpense.textContent=finishing?'Finishing…':listening?'🎤 Listening… tap to stop':'🎤 Tell TAAZ an expense';voiceExpense.classList.toggle('voice-active',listening)}
+    }
+    function setupVoiceSettingsControls(){
+      const select=$('#voiceSelect'),rate=$('#voiceRate'),pitch=$('#voicePitch');if(!select||!rate||!pitch)return;
+      const settings=getVoiceSettings(),voices=availableEnglishVoices();
+      select.innerHTML='<option value="">Auto — prefer English (India)</option>'+voices.map(v=>`<option value="${escapeHtml(voiceKey(v))}">${escapeHtml(v.name)} — ${escapeHtml(v.lang||'English')}</option>`).join('');
+      select.value=voices.some(v=>voiceKey(v)===settings.voiceKey)?settings.voiceKey:'';
+      rate.value=String(settings.rate);pitch.value=String(settings.pitch);
+      const refresh=()=>{const cur=getVoiceSettings();if($('#voiceRateValue'))$('#voiceRateValue').textContent=cur.rate.toFixed(2)+'×';if($('#voicePitchValue'))$('#voicePitchValue').textContent=cur.pitch.toFixed(2)};
+      refresh();
+      select.onchange=()=>{saveVoiceSettings({voiceKey:select.value});showToast('Voice preference saved')};
+      rate.oninput=()=>{const cur=saveVoiceSettings({rate:Number(rate.value)});$('#voiceRateValue').textContent=cur.rate.toFixed(2)+'×'};
+      pitch.oninput=()=>{const cur=saveVoiceSettings({pitch:Number(pitch.value)});$('#voicePitchValue').textContent=cur.pitch.toFixed(2)};
+      $('#previewVoice').onclick=()=>{if(isSpeaking()){stopSpeaking();return}speakText('Hello Azhar. This is your selected TAAZ voice at the current speed and pitch.')};
+    }
     function makeSpokenBrief(){
       const over=tasks.filter(isOverdue);const due=tasks.filter(t=>isToday(t)&&!isDone(t));const posts=contents.filter(c=>c.scheduled_at&&localDateKey(c.scheduled_at)===todayKey()&&c.status!=='published'&&c.status!=='skipped');let parts=[];
       parts.push(`Good ${new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, Azhar.`);parts.push(`You have ${over.length} overdue ${over.length===1?'task':'tasks'}, ${due.length} ${due.length===1?'task':'tasks'} due today, and ${posts.length} ${posts.length===1?'post':'posts'} scheduled today.`);
@@ -576,10 +680,19 @@
     }
     function listenOnce(prompt,callback){
       const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showToast('Voice recognition is not supported here. Use Chrome on Android or desktop.');return}
-      if(activeRecognition){try{activeRecognition.abort()}catch(e){}}const r=new SR();activeRecognition=r;r.lang='en-IN';r.interimResults=false;r.maxAlternatives=1;showToast('Listening…');if(prompt)showToast(prompt);r.onresult=e=>{activeRecognition=null;const text=e.results[0][0].transcript;showToast(`Heard: ${text}`);callback(text)};r.onerror=e=>{activeRecognition=null;if(e.error!=='aborted')showToast('I could not hear that. Please try again.')};r.onend=()=>{if(activeRecognition===r)activeRecognition=null};setTimeout(()=>{try{r.start()}catch(e){showToast('Microphone could not start.')}} ,prompt?650:0);
+      if(activeRecognition){stopListening(false)}
+      const r=new SR();activeRecognition=r;r.lang='en-IN';r.interimResults=false;r.continuous=false;r.maxAlternatives=1;
+      r.onstart=()=>{showToast(prompt||'Listening…');updateVoiceUI()};
+      r.onspeechend=()=>{if(activeRecognition===r&&!r._taazStopping){try{r._taazStopping=true;r.stop();updateVoiceUI()}catch(e){}}};
+      r.onresult=e=>{if(activeRecognition===r)activeRecognition=null;updateVoiceUI();const text=e.results[0][0].transcript;showToast(`Heard: ${text}`);callback(text)};
+      r.onerror=e=>{if(activeRecognition===r)activeRecognition=null;updateVoiceUI();if(e.error!=='aborted'&&e.error!=='no-speech')showToast('I could not hear that. Please try again.')};
+      r.onend=()=>{if(activeRecognition===r)activeRecognition=null;updateVoiceUI()};
+      try{r.start()}catch(e){activeRecognition=null;updateVoiceUI();showToast('Microphone could not start.')}
     }
     function startVoiceAssistant(){
-      stopSpeaking();listenOnce('',handleVoiceCommand);
+      if(activeRecognition){stopListening(true);return}
+      if(isSpeaking()){stopSpeaking();showToast('Voice response stopped');return}
+      listenOnce('',handleVoiceCommand);
     }
     function handleVoiceCommand(text){
       const lower=text.toLowerCase().trim();
