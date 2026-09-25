@@ -80,6 +80,9 @@
   
     .voice-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.voice-settings-grid .field{margin-bottom:0}.voice-range-wrap{display:flex;align-items:center;gap:10px}.voice-range-wrap input[type="range"]{width:100%;min-width:0}.voice-readout{min-width:48px;text-align:center;font-size:12px;font-weight:500;color:#0b8fa8;background:#e9fbfd;border-radius:999px;padding:5px 8px}.voice-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:9px}.voice-active{outline:3px solid rgba(255,194,0,.35);outline-offset:2px}
     @media(max-width:520px){.voice-settings-grid{grid-template-columns:1fr}}
+  
+    .mc-sharebar{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 16px}.mc-sharebar button{min-height:46px}.mc-sharebar .whatsapp-share{background:#0b8fa8;color:#fff;border:0;border-radius:11px;font-weight:500}.mc-sharebar .copy-summary{background:#fff;color:#087f99;border:1px solid #cfe4e7;border-radius:11px;font-weight:500}.mc-summary-preview{white-space:pre-wrap;background:#f7fbfb;border:1px solid #d8eaec;border-radius:12px;padding:14px;font-size:13px;line-height:1.6;color:#29424f}.mc-summary-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.mc-summary-actions button{flex:1;min-width:140px}
+    @media(max-width:430px){.mc-sharebar{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -423,6 +426,73 @@
       bindContentActions();bindTaskActions();
     }
 
+    function makeMCMonthlySummary(){
+      const expected=mcUnits.reduce((sum,u)=>sum+Number(u.monthly_amount||0),0);
+      const paid=mcPayments.filter(p=>p.received);
+      const collected=paid.reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const totalExpenses=mcExpenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
+      const balance=collected-totalExpenses;
+      const pendingAmount=Math.max(expected-collected,0);
+      const paymentMap=new Map(mcPayments.map(p=>[p.unit_id,p]));
+      const pendingUnits=mcUnits.filter(u=>!paymentMap.get(u.id)?.received).map(u=>u.unit_name);
+      const cashAmount=paid.filter(p=>p.payment_mode==='cash').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const onlineAmount=paid.filter(p=>p.payment_mode==='online').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`));
+      const expenseLines=[...mcExpenses].sort((a,b)=>String(a.expense_date).localeCompare(String(b.expense_date))).map(e=>{
+        const label=e.description||mcCategoryLabel(e.category);
+        return `• ${label}: ${money(e.amount)}`;
+      });
+      const lines=[
+        `*Mehak Classic – Monthly Summary*`,
+        `*${monthLabel}*`,
+        '',
+        `Expected collection: *${money(expected)}*`,
+        `Total collected: *${money(collected)}*`,
+        `Total expenses: *${money(totalExpenses)}*`,
+        `Balance with us: *${money(balance)}*`,
+        `Pending collection: *${money(pendingAmount)}*`,
+        '',
+        `Payment received: ${paid.length} of ${mcUnits.length} units`,
+        `Cash: ${money(cashAmount)} | Online: ${money(onlineAmount)}`
+      ];
+      if(pendingUnits.length)lines.push(`Pending units: ${pendingUnits.join(', ')}`);
+      if(expenseLines.length){
+        lines.push('','*Expense breakdown*',...expenseLines);
+      }else{
+        lines.push('','*Expense breakdown*','• No expenses recorded');
+      }
+      lines.push('','Thank you.');
+      return lines.join('\n');
+    }
+
+    async function copyMCMonthlySummary(){
+      const text=makeMCMonthlySummary();
+      try{
+        await navigator.clipboard.writeText(text);
+        showToast('Monthly summary copied for WhatsApp');
+      }catch(e){
+        const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');showToast('Monthly summary copied for WhatsApp')}catch(err){showToast('Could not copy summary')}
+        ta.remove();
+      }
+    }
+
+    async function shareMCMonthlySummary(){
+      const text=makeMCMonthlySummary();
+      if(navigator.share){
+        try{await navigator.share({title:'Mehak Classic monthly summary',text});return}catch(e){if(e?.name==='AbortError')return}
+      }
+      const url='https://wa.me/?text='+encodeURIComponent(text);
+      const opened=window.open(url,'_blank','noopener');
+      if(!opened){await copyMCMonthlySummary();showToast('Summary copied. Paste it in the WhatsApp group.')}
+    }
+
+    function previewMCMonthlySummary(){
+      const summary=makeMCMonthlySummary();
+      openModal(`<div class="sheethead"><h3>WhatsApp monthly summary</h3><button class="x" data-close>×</button></div><div class="mc-summary-preview">${escapeHtml(summary)}</div><div class="mc-summary-actions"><button id="mcPreviewCopy" class="secondary" type="button">Copy summary</button><button id="mcPreviewShare" class="primary" type="button">Share to WhatsApp</button></div>`);
+      $('#mcPreviewCopy').onclick=copyMCMonthlySummary;$('#mcPreviewShare').onclick=shareMCMonthlySummary;
+    }
+
     function renderMC(){
       const expected=mcUnits.reduce((s,u)=>s+Number(u.monthly_amount||0),0);
       const collected=mcPayments.filter(p=>p.received).reduce((s,p)=>s+Number(p.amount||0),0);
@@ -436,11 +506,14 @@
       const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`));
       const unitsHtml=mcUnits.map(u=>{const p=paymentMap.get(u.id);const received=!!p?.received;const mode=received?(p?.payment_mode==='cash'?'Cash':p?.payment_mode==='online'?'Online':'Set mode'):'';return `<div class="mc-unit"><div class="mc-3d">${premiumIcon('home')}</div><div class="mc-unit-copy"><div class="mc-unit-name">${escapeHtml(u.unit_name)}</div><div class="mc-unit-amount">${money(u.monthly_amount)} monthly</div></div><button class="mc-toggle ${received?'received':''}" data-mc-payment="${p?.id||''}" type="button">${received?`Received · ${mode}`:'Not received'}</button></div>`}).join('');
       const expenseHtml=mcExpenses.length?mcExpenses.map(e=>`<div class="mc-expense"><div class="mc-3d">${e.category==='water'?premiumIcon('droplet'):e.category==='electricity'?premiumIcon('bolt'):e.category==='watchman'?premiumIcon('users'):premiumIcon('receipt')}</div><div class="mc-expense-main"><div class="mc-expense-title">${escapeHtml(e.description||mcCategoryLabel(e.category))}</div><div class="mc-expense-meta">${escapeHtml(mcCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}${e.payment_mode?` · ${escapeHtml(e.payment_mode)}`:''}</div></div><div class="mc-expense-amount">${money(e.amount)}</div><button class="mc-delete" data-mc-delete="${e.id}" title="Delete expense" type="button">×</button></div>`).join(''):`<div class="simple-empty">No expenses entered for ${escapeHtml(monthLabel)}.</div>`;
-      main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-summary"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${receivedCount} of ${mcUnits.length} units paid</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Balance</div></div></div><div class="mc-detail">Collection minus expenses</div></div></div><div class="mc-statusline">${receivedCount} received · ${cashCount} cash · ${onlineCount} online · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} collection</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
+      main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-summary"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${receivedCount} of ${mcUnits.length} units paid</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Balance</div></div></div><div class="mc-detail">Collection minus expenses</div></div></div><div class="mc-statusline">${receivedCount} received · ${cashCount} cash · ${onlineCount} online · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><div class="mc-sharebar"><button id="mcCopySummary" class="copy-summary" type="button">Copy monthly summary</button><button id="mcShareWhatsApp" class="whatsapp-share" type="button">Share to WhatsApp</button></div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} collection</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
       $('#mcMonth').onchange=async e=>{mcMonthValue=e.target.value||mcMonthValue;main.innerHTML='<div class="simple-empty">Loading month…</div>';await refreshMCData();renderMC()};
       $$('[data-mc-payment]').forEach(b=>b.onclick=()=>{const id=b.dataset.mcPayment;if(!id)return;const p=mcPayments.find(x=>x.id===id);if(p)openMCPaymentModal(p)});
       $$('[data-mc-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this expense?'))return;const res=await supabase.from('mc_expenses').delete().eq('id',b.dataset.mcDelete);if(res.error){showToast(res.error.message);return}await refreshMCData();renderMC();showToast('Expense deleted')});
       $('#mcAddExpense').onclick=openMCExpenseModal;
+      $('#mcCopySummary').onclick=copyMCMonthlySummary;
+      $('#mcShareWhatsApp').onclick=shareMCMonthlySummary;
+      $('#mcCopySummary').ondblclick=previewMCMonthlySummary;
     }
 
     function openMCPaymentModal(payment){
