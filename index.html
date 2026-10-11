@@ -83,6 +83,9 @@
   
     .mc-sharebar{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 16px}.mc-sharebar button{min-height:46px}.mc-sharebar .whatsapp-share{background:#0b8fa8;color:#fff;border:0;border-radius:11px;font-weight:500}.mc-sharebar .copy-summary{background:#fff;color:#087f99;border:1px solid #cfe4e7;border-radius:11px;font-weight:500}.mc-summary-preview{white-space:pre-wrap;background:#f7fbfb;border:1px solid #d8eaec;border-radius:12px;padding:14px;font-size:13px;line-height:1.6;color:#29424f}.mc-summary-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.mc-summary-actions button{flex:1;min-width:140px}
     @media(max-width:430px){.mc-sharebar{grid-template-columns:1fr}}
+  
+    .mc-carryforward{background:#fff8d8;border:1px solid #f1dc7b;color:#5c4a00;border-radius:10px;padding:10px 13px;margin:0 0 12px;font-size:13px}.mc-carryforward strong{font-weight:600}.mc-summary-ledger{grid-template-columns:repeat(4,1fr)}
+    @media(max-width:760px){.mc-summary-ledger{grid-template-columns:repeat(2,1fr)}}@media(max-width:430px){.mc-summary-ledger{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -129,7 +132,7 @@
     const $$ = s => [...document.querySelectorAll(s)];
     const authView=$('#authView'), appView=$('#appView'), main=$('#main'), modal=$('#modal'), sheet=$('#sheet'), toast=$('#toast');
     let session=null, user=null, clients=[], tasks=[], contents=[], currentPage='today', selectedClientId=null, authMode='signin', taskFilter='today';
-    let mcUnits=[], mcPayments=[], mcExpenses=[], mcMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+    let mcUnits=[], mcPayments=[], mcExpenses=[], mcOpeningBalance=0, mcMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
     let expenses=[], expenseMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, activeRecognition=null, activeUtterance=null;
 
     const escapeHtml = (s='') => String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -330,11 +333,16 @@
         await supabase.from('mc_payments').upsert(rows,{onConflict:'user_id,unit_id,month_date',ignoreDuplicates:true});
       }
       const range=mcMonthRange();
-      const [p,e]=await Promise.all([
+      const [p,e,priorPayments,priorExpenses]=await Promise.all([
         supabase.from('mc_payments').select('*').eq('month_date',month),
-        supabase.from('mc_expenses').select('*').gte('expense_date',range.start).lte('expense_date',range.end).order('expense_date',{ascending:false})
+        supabase.from('mc_expenses').select('*').gte('expense_date',range.start).lte('expense_date',range.end).order('expense_date',{ascending:false}),
+        supabase.from('mc_payments').select('amount').eq('received',true).lt('month_date',month),
+        supabase.from('mc_expenses').select('amount').lt('expense_date',range.start)
       ]);
       mcPayments=p.data||[];mcExpenses=e.data||[];
+      const previousCollections=(priorPayments.data||[]).reduce((sum,row)=>sum+Number(row.amount||0),0);
+      const previousExpenses=(priorExpenses.data||[]).reduce((sum,row)=>sum+Number(row.amount||0),0);
+      mcOpeningBalance=previousCollections-previousExpenses;
     }
     async function setPage(page){
       currentPage=page;$$('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
@@ -431,7 +439,8 @@
       const paid=mcPayments.filter(p=>p.received);
       const collected=paid.reduce((sum,p)=>sum+Number(p.amount||0),0);
       const totalExpenses=mcExpenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
-      const balance=collected-totalExpenses;
+      const openingBalance=mcOpeningBalance;
+      const closingBalance=openingBalance+collected-totalExpenses;
       const pendingAmount=Math.max(expected-collected,0);
       const paymentMap=new Map(mcPayments.map(p=>[p.unit_id,p]));
       const pendingUnits=mcUnits.filter(u=>!paymentMap.get(u.id)?.received).map(u=>u.unit_name);
@@ -446,10 +455,11 @@
         `*Mehak Classic – Monthly Summary*`,
         `*${monthLabel}*`,
         '',
+        `Opening balance carried forward: *${money(openingBalance)}*`,
         `Expected collection: *${money(expected)}*`,
-        `Total collected: *${money(collected)}*`,
-        `Total expenses: *${money(totalExpenses)}*`,
-        `Balance with us: *${money(balance)}*`,
+        `Total collected this month: *${money(collected)}*`,
+        `Total expenses this month: *${money(totalExpenses)}*`,
+        `Closing balance with us: *${money(closingBalance)}*`,
         `Pending collection: *${money(pendingAmount)}*`,
         '',
         `Payment received: ${paid.length} of ${mcUnits.length} units`,
@@ -497,7 +507,8 @@
       const expected=mcUnits.reduce((s,u)=>s+Number(u.monthly_amount||0),0);
       const collected=mcPayments.filter(p=>p.received).reduce((s,p)=>s+Number(p.amount||0),0);
       const expenses=mcExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
-      const balance=collected-expenses;
+      const openingBalance=mcOpeningBalance;
+      const balance=openingBalance+collected-expenses;
       const receivedCount=mcPayments.filter(p=>p.received).length;
       const cashCount=mcPayments.filter(p=>p.received&&p.payment_mode==='cash').length;
       const onlineCount=mcPayments.filter(p=>p.received&&p.payment_mode==='online').length;
@@ -506,7 +517,7 @@
       const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`));
       const unitsHtml=mcUnits.map(u=>{const p=paymentMap.get(u.id);const received=!!p?.received;const mode=received?(p?.payment_mode==='cash'?'Cash':p?.payment_mode==='online'?'Online':'Set mode'):'';return `<div class="mc-unit"><div class="mc-3d">${premiumIcon('home')}</div><div class="mc-unit-copy"><div class="mc-unit-name">${escapeHtml(u.unit_name)}</div><div class="mc-unit-amount">${money(u.monthly_amount)} monthly</div></div><button class="mc-toggle ${received?'received':''}" data-mc-payment="${p?.id||''}" type="button">${received?`Received · ${mode}`:'Not received'}</button></div>`}).join('');
       const expenseHtml=mcExpenses.length?mcExpenses.map(e=>`<div class="mc-expense"><div class="mc-3d">${e.category==='water'?premiumIcon('droplet'):e.category==='electricity'?premiumIcon('bolt'):e.category==='watchman'?premiumIcon('users'):premiumIcon('receipt')}</div><div class="mc-expense-main"><div class="mc-expense-title">${escapeHtml(e.description||mcCategoryLabel(e.category))}</div><div class="mc-expense-meta">${escapeHtml(mcCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}${e.payment_mode?` · ${escapeHtml(e.payment_mode)}`:''}</div></div><div class="mc-expense-amount">${money(e.amount)}</div><button class="mc-delete" data-mc-delete="${e.id}" title="Delete expense" type="button">×</button></div>`).join(''):`<div class="simple-empty">No expenses entered for ${escapeHtml(monthLabel)}.</div>`;
-      main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-summary"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${receivedCount} of ${mcUnits.length} units paid</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Balance</div></div></div><div class="mc-detail">Collection minus expenses</div></div></div><div class="mc-statusline">${receivedCount} received · ${cashCount} cash · ${onlineCount} online · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><div class="mc-sharebar"><button id="mcCopySummary" class="copy-summary" type="button">Copy monthly summary</button><button id="mcShareWhatsApp" class="whatsapp-share" type="button">Share to WhatsApp</button></div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} collection</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
+      main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-carryforward">Opening balance carried forward: <strong>${money(openingBalance)}</strong></div><div class="mc-summary mc-summary-ledger"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('arrow')}</div><div><div class="mc-money ${openingBalance<0?'mc-negative':'mc-positive'}">${money(openingBalance)}</div><div class="mc-label">Opening balance</div></div></div><div class="mc-detail">Carried forward from previous months</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${receivedCount} of ${mcUnits.length} units paid this month</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded this month</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Closing balance</div></div></div><div class="mc-detail">Opening + collected − expenses</div></div></div><div class="mc-statusline">${receivedCount} received · ${cashCount} cash · ${onlineCount} online · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><div class="mc-sharebar"><button id="mcCopySummary" class="copy-summary" type="button">Copy monthly summary</button><button id="mcShareWhatsApp" class="whatsapp-share" type="button">Share to WhatsApp</button></div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} collection</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
       $('#mcMonth').onchange=async e=>{mcMonthValue=e.target.value||mcMonthValue;main.innerHTML='<div class="simple-empty">Loading month…</div>';await refreshMCData();renderMC()};
       $$('[data-mc-payment]').forEach(b=>b.onclick=()=>{const id=b.dataset.mcPayment;if(!id)return;const p=mcPayments.find(x=>x.id===id);if(p)openMCPaymentModal(p)});
       $$('[data-mc-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this expense?'))return;const res=await supabase.from('mc_expenses').delete().eq('id',b.dataset.mcDelete);if(res.error){showToast(res.error.message);return}await refreshMCData();renderMC();showToast('Expense deleted')});
