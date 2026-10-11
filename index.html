@@ -86,6 +86,8 @@
   
     .mc-carryforward{background:#fff8d8;border:1px solid #f1dc7b;color:#5c4a00;border-radius:10px;padding:10px 13px;margin:0 0 12px;font-size:13px}.mc-carryforward strong{font-weight:600}.mc-summary-ledger{grid-template-columns:repeat(4,1fr)}
     @media(max-width:760px){.mc-summary-ledger{grid-template-columns:repeat(2,1fr)}}@media(max-width:430px){.mc-summary-ledger{grid-template-columns:1fr}}
+  
+    .mc-match-note{background:#eef9fa;border:1px solid #cce8eb;color:#3b5b63;border-radius:10px;padding:11px 13px;margin:0 0 14px;font-size:12px;line-height:1.55}
   </style>
 </head>
 <body>
@@ -132,7 +134,7 @@
     const $$ = s => [...document.querySelectorAll(s)];
     const authView=$('#authView'), appView=$('#appView'), main=$('#main'), modal=$('#modal'), sheet=$('#sheet'), toast=$('#toast');
     let session=null, user=null, clients=[], tasks=[], contents=[], currentPage='today', selectedClientId=null, authMode='signin', taskFilter='today';
-    let mcUnits=[], mcPayments=[], mcExpenses=[], mcOpeningBalance=0, mcMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+    let mcUnits=[], mcPayments=[], mcExpenses=[], mcReceipts=[], mcOpeningBalance=0, mcMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
     let expenses=[], expenseMonthValue=`${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`, activeRecognition=null, activeUtterance=null;
 
     const escapeHtml = (s='') => String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -333,14 +335,15 @@
         await supabase.from('mc_payments').upsert(rows,{onConflict:'user_id,unit_id,month_date',ignoreDuplicates:true});
       }
       const range=mcMonthRange();
-      const [p,e,priorPayments,priorExpenses]=await Promise.all([
+      const [p,e,r,priorReceipts,priorExpenses]=await Promise.all([
         supabase.from('mc_payments').select('*').eq('month_date',month),
         supabase.from('mc_expenses').select('*').gte('expense_date',range.start).lte('expense_date',range.end).order('expense_date',{ascending:false}),
-        supabase.from('mc_payments').select('amount').eq('received',true).lt('month_date',month),
+        supabase.from('mc_receipts').select('*').eq('receipt_month',month).order('receipt_date',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}),
+        supabase.from('mc_receipts').select('amount').lt('receipt_month',month),
         supabase.from('mc_expenses').select('amount').lt('expense_date',range.start)
       ]);
-      mcPayments=p.data||[];mcExpenses=e.data||[];
-      const previousCollections=(priorPayments.data||[]).reduce((sum,row)=>sum+Number(row.amount||0),0);
+      mcPayments=p.data||[];mcExpenses=e.data||[];mcReceipts=r.data||[];
+      const previousCollections=(priorReceipts.data||[]).reduce((sum,row)=>sum+Number(row.amount||0),0);
       const previousExpenses=(priorExpenses.data||[]).reduce((sum,row)=>sum+Number(row.amount||0),0);
       mcOpeningBalance=previousCollections-previousExpenses;
     }
@@ -434,22 +437,50 @@
       bindContentActions();bindTaskActions();
     }
 
+    function groupedMCReceipts(){
+      const map=new Map();
+      for(const r of mcReceipts){
+        const key=r.source_group||r.source_key||r.id;
+        if(!map.has(key))map.set(key,{...r,amount:0,parts:0});
+        const g=map.get(key);g.amount+=Number(r.amount||0);g.parts+=1;
+        if(!g.receipt_date&&r.receipt_date)g.receipt_date=r.receipt_date;
+      }
+      return [...map.values()];
+    }
+    function mcReceiptDateLabel(r){
+      return r.receipt_date?new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short'}).format(new Date(`${r.receipt_date}T12:00:00`)):'Date not recorded';
+    }
+    function mcCoverageCount(){
+      const monthlyAmount=Number(mcUnits[0]?.monthly_amount||2500)||2500;
+      const collected=mcReceipts.reduce((sum,r)=>sum+Number(r.amount||0),0);
+      return Math.min(mcUnits.length,Math.floor((collected+.001)/monthlyAmount));
+    }
+    function findUnallocatedReceiptForMode(mode){
+      return mcReceipts.find(r=>!r.unit_id&&Number(r.amount||0)===2500&&r.payment_mode===mode)
+        || mcReceipts.find(r=>!r.unit_id&&Number(r.amount||0)===2500&&!r.payment_mode)
+        || null;
+    }
+
     function makeMCMonthlySummary(){
       const expected=mcUnits.reduce((sum,u)=>sum+Number(u.monthly_amount||0),0);
-      const paid=mcPayments.filter(p=>p.received);
-      const collected=paid.reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const collected=mcReceipts.reduce((sum,r)=>sum+Number(r.amount||0),0);
       const totalExpenses=mcExpenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
       const openingBalance=mcOpeningBalance;
       const closingBalance=openingBalance+collected-totalExpenses;
       const pendingAmount=Math.max(expected-collected,0);
-      const paymentMap=new Map(mcPayments.map(p=>[p.unit_id,p]));
-      const pendingUnits=mcUnits.filter(u=>!paymentMap.get(u.id)?.received).map(u=>u.unit_name);
-      const cashAmount=paid.filter(p=>p.payment_mode==='cash').reduce((sum,p)=>sum+Number(p.amount||0),0);
-      const onlineAmount=paid.filter(p=>p.payment_mode==='online').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const coveredCount=mcCoverageCount();
+      const cashAmount=mcReceipts.filter(r=>r.payment_mode==='cash').reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const onlineAmount=mcReceipts.filter(r=>r.payment_mode==='online').reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const unspecifiedAmount=mcReceipts.filter(r=>!r.payment_mode).reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const unallocated=mcReceipts.filter(r=>!r.unit_id).length;
       const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`));
       const expenseLines=[...mcExpenses].sort((a,b)=>String(a.expense_date).localeCompare(String(b.expense_date))).map(e=>{
         const label=e.description||mcCategoryLabel(e.category);
         return `• ${label}: ${money(e.amount)}`;
+      });
+      const receiptLines=groupedMCReceipts().filter(r=>r.source_type!=='unit_payment').map(r=>{
+        const mode=r.payment_mode? ` · ${r.payment_mode==='online'?'Online':'Cash'}` : '';
+        return `• ${mcReceiptDateLabel(r)} · ${r.payer_name||'Maintenance receipt'}: ${money(r.amount)}${mode}`;
       });
       const lines=[
         `*Mehak Classic – Monthly Summary*`,
@@ -462,10 +493,11 @@
         `Closing balance with us: *${money(closingBalance)}*`,
         `Pending collection: *${money(pendingAmount)}*`,
         '',
-        `Payment received: ${paid.length} of ${mcUnits.length} units`,
-        `Cash: ${money(cashAmount)} | Online: ${money(onlineAmount)}`
+        `Maintenance covered: ${coveredCount} of ${mcUnits.length} flats`,
+        `Cash: ${money(cashAmount)} | Online: ${money(onlineAmount)}${unspecifiedAmount?` | Unspecified: ${money(unspecifiedAmount)}`:''}`
       ];
-      if(pendingUnits.length)lines.push(`Pending units: ${pendingUnits.join(', ')}`);
+      if(unallocated)lines.push(`Unit-wise mapping pending for ${unallocated} receipt allocation${unallocated===1?'':'s'}.`);
+      if(receiptLines.length)lines.push('','*Receipts recorded*',...receiptLines);
       if(expenseLines.length){
         lines.push('','*Expense breakdown*',...expenseLines);
       }else{
@@ -504,20 +536,24 @@
     }
 
     function renderMC(){
-      const expected=mcUnits.reduce((s,u)=>s+Number(u.monthly_amount||0),0);
-      const collected=mcPayments.filter(p=>p.received).reduce((s,p)=>s+Number(p.amount||0),0);
-      const expenses=mcExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+      const expected=mcUnits.reduce((sum,u)=>sum+Number(u.monthly_amount||0),0);
+      const collected=mcReceipts.reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const expenses=mcExpenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
       const openingBalance=mcOpeningBalance;
       const balance=openingBalance+collected-expenses;
-      const receivedCount=mcPayments.filter(p=>p.received).length;
-      const cashCount=mcPayments.filter(p=>p.received&&p.payment_mode==='cash').length;
-      const onlineCount=mcPayments.filter(p=>p.received&&p.payment_mode==='online').length;
-      const pendingCount=Math.max(mcUnits.length-receivedCount,0);
+      const coveredCount=mcCoverageCount();
+      const pendingCount=Math.max(mcUnits.length-coveredCount,0);
+      const cashAmount=mcReceipts.filter(r=>r.payment_mode==='cash').reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const onlineAmount=mcReceipts.filter(r=>r.payment_mode==='online').reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const unspecifiedAmount=mcReceipts.filter(r=>!r.payment_mode).reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const unallocatedReceipts=mcReceipts.filter(r=>!r.unit_id);
       const paymentMap=new Map(mcPayments.map(p=>[p.unit_id,p]));
       const monthLabel=new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`));
-      const unitsHtml=mcUnits.map(u=>{const p=paymentMap.get(u.id);const received=!!p?.received;const mode=received?(p?.payment_mode==='cash'?'Cash':p?.payment_mode==='online'?'Online':'Set mode'):'';return `<div class="mc-unit"><div class="mc-3d">${premiumIcon('home')}</div><div class="mc-unit-copy"><div class="mc-unit-name">${escapeHtml(u.unit_name)}</div><div class="mc-unit-amount">${money(u.monthly_amount)} monthly</div></div><button class="mc-toggle ${received?'received':''}" data-mc-payment="${p?.id||''}" type="button">${received?`Received · ${mode}`:'Not received'}</button></div>`}).join('');
+      const unitsHtml=mcUnits.map(u=>{const p=paymentMap.get(u.id);const received=!!p?.received;const mode=received?(p?.payment_mode==='cash'?'Cash':p?.payment_mode==='online'?'Online':'Set mode'):'';return `<div class="mc-unit"><div class="mc-3d">${premiumIcon('home')}</div><div class="mc-unit-copy"><div class="mc-unit-name">${escapeHtml(u.unit_name)}</div><div class="mc-unit-amount">${money(u.monthly_amount)} monthly</div></div><button class="mc-toggle ${received?'received':''}" data-mc-payment="${p?.id||''}" type="button">${received?`Received · ${mode}`:'Not matched'}</button></div>`}).join('');
       const expenseHtml=mcExpenses.length?mcExpenses.map(e=>`<div class="mc-expense"><div class="mc-3d">${e.category==='water'?premiumIcon('droplet'):e.category==='electricity'?premiumIcon('bolt'):e.category==='watchman'?premiumIcon('users'):premiumIcon('receipt')}</div><div class="mc-expense-main"><div class="mc-expense-title">${escapeHtml(e.description||mcCategoryLabel(e.category))}</div><div class="mc-expense-meta">${escapeHtml(mcCategoryLabel(e.category))} · ${fmtDate(`${e.expense_date}T12:00:00`)}${e.payment_mode?` · ${escapeHtml(e.payment_mode)}`:''}</div></div><div class="mc-expense-amount">${money(e.amount)}</div><button class="mc-delete" data-mc-delete="${e.id}" title="Delete expense" type="button">×</button></div>`).join(''):`<div class="simple-empty">No expenses entered for ${escapeHtml(monthLabel)}.</div>`;
-      main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-carryforward">Opening balance carried forward: <strong>${money(openingBalance)}</strong></div><div class="mc-summary mc-summary-ledger"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('arrow')}</div><div><div class="mc-money ${openingBalance<0?'mc-negative':'mc-positive'}">${money(openingBalance)}</div><div class="mc-label">Opening balance</div></div></div><div class="mc-detail">Carried forward from previous months</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${receivedCount} of ${mcUnits.length} units paid this month</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded this month</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Closing balance</div></div></div><div class="mc-detail">Opening + collected − expenses</div></div></div><div class="mc-statusline">${receivedCount} received · ${cashCount} cash · ${onlineCount} online · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><div class="mc-sharebar"><button id="mcCopySummary" class="copy-summary" type="button">Copy monthly summary</button><button id="mcShareWhatsApp" class="whatsapp-share" type="button">Share to WhatsApp</button></div><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} collection</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
+      const imported=groupedMCReceipts().filter(r=>r.source_type!=='unit_payment');
+      const receiptHtml=imported.length?imported.map(r=>`<div class="mc-expense"><div class="mc-3d">${r.payment_mode==='cash'?premiumIcon('wallet'):premiumIcon('receipt')}</div><div class="mc-expense-main"><div class="mc-expense-title">${escapeHtml(r.payer_name||'Maintenance receipt')}</div><div class="mc-expense-meta">${escapeHtml(mcReceiptDateLabel(r))}${r.payment_mode?` · ${escapeHtml(r.payment_mode)}`:''}${r.parts>1?` · ${r.parts} flats`:''}</div></div><div class="mc-expense-amount">${money(r.amount)}</div></div>`).join(''):`<div class="simple-empty">No imported bank/cash receipts for ${escapeHtml(monthLabel)}.</div>`;
+      main.innerHTML=`<div class="mc-head"><div><h2>Mehak Classic</h2><p>Monthly apartment collection & expenses</p></div><input id="mcMonth" class="mc-month" type="month" value="${mcMonthValue}"></div><div class="mc-expected">Expected collection: ${money(expected)} · ${mcUnits.length} units × ₹2,500</div><div class="mc-carryforward">Opening balance carried forward: <strong>${money(openingBalance)}</strong></div><div class="mc-summary mc-summary-ledger"><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('arrow')}</div><div><div class="mc-money ${openingBalance<0?'mc-negative':'mc-positive'}">${money(openingBalance)}</div><div class="mc-label">Opening balance</div></div></div><div class="mc-detail">Carried forward from previous months</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('wallet')}</div><div><div class="mc-money mc-positive">${money(collected)}</div><div class="mc-label">Collected</div></div></div><div class="mc-detail">${coveredCount} of ${mcUnits.length} flats covered this month</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('receipt')}</div><div><div class="mc-money mc-negative">${money(expenses)}</div><div class="mc-label">Expenses</div></div></div><div class="mc-detail">${mcExpenses.length} payment${mcExpenses.length===1?'':'s'} recorded this month</div></div><div class="mc-summary-card"><div class="mc-summary-top"><div class="mc-3d">${premiumIcon('check')}</div><div><div class="mc-money ${balance<0?'mc-negative':'mc-positive'}">${money(balance)}</div><div class="mc-label">Closing balance</div></div></div><div class="mc-detail">Opening + collected − expenses</div></div></div><div class="mc-statusline">${coveredCount} of ${mcUnits.length} flats covered · Cash ${money(cashAmount)} · Online ${money(onlineAmount)}${unspecifiedAmount?` · Unspecified ${money(unspecifiedAmount)}`:''} · ${pendingCount} pending · Pending collection ${money(Math.max(expected-collected,0))}</div><div class="mc-sharebar"><button id="mcCopySummary" class="copy-summary" type="button">Copy monthly summary</button><button id="mcShareWhatsApp" class="whatsapp-share" type="button">Share to WhatsApp</button></div>${unallocatedReceipts.length?`<div class="mc-match-note">Bank/cash receipts are loaded for this month. ${unallocatedReceipts.length} receipt allocation${unallocatedReceipts.length===1?' is':'s are'} not yet matched to flat numbers, so the totals are correct even if the flat list below still says “Not matched”.</div>`:''}<section class="section"><div class="section-head"><h3>Bank & cash receipts</h3></div>${receiptHtml}</section><section class="section"><div class="section-head"><h3>${escapeHtml(monthLabel)} flat matching</h3></div><div class="mc-list">${unitsHtml}</div></section><section class="section"><div class="section-head"><h3>Expenses</h3><button id="mcAddExpense" class="fab" type="button">+ Add expense</button></div>${expenseHtml}</section>`;
       $('#mcMonth').onchange=async e=>{mcMonthValue=e.target.value||mcMonthValue;main.innerHTML='<div class="simple-empty">Loading month…</div>';await refreshMCData();renderMC()};
       $$('[data-mc-payment]').forEach(b=>b.onclick=()=>{const id=b.dataset.mcPayment;if(!id)return;const p=mcPayments.find(x=>x.id===id);if(p)openMCPaymentModal(p)});
       $$('[data-mc-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this expense?'))return;const res=await supabase.from('mc_expenses').delete().eq('id',b.dataset.mcDelete);if(res.error){showToast(res.error.message);return}await refreshMCData();renderMC();showToast('Expense deleted')});
@@ -531,18 +567,37 @@
       const unit=mcUnits.find(u=>u.id===payment.unit_id);
       if(!unit)return;
       const currentMode=payment.payment_mode||'';
-      openModal(`<div class="sheethead"><h3>Maintenance payment</h3><button class="x" data-close>×</button></div><div class="mc-payment-unit">${escapeHtml(unit.unit_name)}</div><div class="mc-payment-amount">${money(payment.amount||unit.monthly_amount)} · ${escapeHtml(new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`)))}</div><p class="mc-payment-note">Choose how this maintenance payment was received.</p><div class="mc-mode-grid"><button class="mc-mode-option ${currentMode==='cash'?'active':''}" type="button" data-mc-mode="cash"><span class="mode-dot">₹</span><span>Cash</span></button><button class="mc-mode-option ${currentMode==='online'?'active':''}" type="button" data-mc-mode="online"><span class="mode-dot">↗</span><span>Online</span></button></div>${payment.received?`<button id="mcMarkNotReceived" class="secondary" type="button" style="width:100%">Mark as not received</button>`:''}`);
+      openModal(`<div class="sheethead"><h3>Match maintenance payment</h3><button class="x" data-close>×</button></div><div class="mc-payment-unit">${escapeHtml(unit.unit_name)}</div><div class="mc-payment-amount">${money(payment.amount||unit.monthly_amount)} · ${escapeHtml(new Intl.DateTimeFormat('en-IN',{month:'long',year:'numeric'}).format(new Date(`${mcMonthValue}-01T12:00:00`)))}</div><p class="mc-payment-note">Choose the payment mode. If an imported bank/cash receipt is still unassigned, TAAZ will match that receipt to this flat instead of adding the money twice.</p><div class="mc-mode-grid"><button class="mc-mode-option ${currentMode==='cash'?'active':''}" type="button" data-mc-mode="cash"><span class="mode-dot">₹</span><span>Cash</span></button><button class="mc-mode-option ${currentMode==='online'?'active':''}" type="button" data-mc-mode="online"><span class="mode-dot">↗</span><span>Online</span></button></div>${payment.received?`<button id="mcMarkNotReceived" class="secondary" type="button" style="width:100%">Unmatch this flat</button>`:''}`);
       $$('[data-mc-mode]').forEach(b=>b.onclick=async()=>{
         const mode=b.dataset.mcMode;
-        const res=await supabase.from('mc_payments').update({received:true,payment_mode:mode,received_at:payment.received_at||new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',payment.id);
-        if(res.error){showToast(res.error.message);return}
-        closeModal();await refreshMCData();renderMC();showToast(`Payment received by ${mode==='cash'?'cash':'online'}`);
+        const existingReceipt=mcReceipts.find(r=>r.unit_id===payment.unit_id);
+        const candidate=!existingReceipt?findUnallocatedReceiptForMode(mode):null;
+        const receivedAt=payment.received_at||new Date().toISOString();
+        const update=await supabase.from('mc_payments').update({received:true,payment_mode:mode,received_at:receivedAt,updated_at:new Date().toISOString()}).eq('id',payment.id);
+        if(update.error){showToast(update.error.message);return}
+        let receiptResult;
+        if(existingReceipt){
+          receiptResult=await supabase.from('mc_receipts').update({payment_mode:mode,updated_at:new Date().toISOString()}).eq('id',existingReceipt.id);
+        }else if(candidate){
+          receiptResult=await supabase.from('mc_receipts').update({unit_id:unit.id,payment_mode:candidate.payment_mode||mode,updated_at:new Date().toISOString()}).eq('id',candidate.id);
+        }else{
+          receiptResult=await supabase.from('mc_receipts').upsert({
+            user_id:user.id,unit_id:unit.id,receipt_month:mcMonthDate(),receipt_date:todayKey(),payer_name:`Flat ${unit.unit_name}`,amount:Number(payment.amount||unit.monthly_amount||2500),payment_mode:mode,source_type:'unit_payment',source_group:`payment:${payment.id}`,source_key:`payment:${payment.id}`,notes:'Recorded from Mehak Classic flat matching',updated_at:new Date().toISOString()
+          },{onConflict:'user_id,source_key'});
+        }
+        if(receiptResult?.error){showToast(receiptResult.error.message);return}
+        closeModal();await refreshMCData();renderMC();showToast(candidate?'Existing receipt matched to this flat':`Payment recorded by ${mode==='cash'?'cash':'online'}`);
       });
       const notReceived=$('#mcMarkNotReceived');
       if(notReceived)notReceived.onclick=async()=>{
+        const linked=mcReceipts.find(r=>r.unit_id===payment.unit_id);
         const res=await supabase.from('mc_payments').update({received:false,payment_mode:null,received_at:null,updated_at:new Date().toISOString()}).eq('id',payment.id);
         if(res.error){showToast(res.error.message);return}
-        closeModal();await refreshMCData();renderMC();showToast('Payment marked not received');
+        if(linked){
+          if(linked.source_type==='unit_payment') await supabase.from('mc_receipts').delete().eq('id',linked.id);
+          else await supabase.from('mc_receipts').update({unit_id:null,updated_at:new Date().toISOString()}).eq('id',linked.id);
+        }
+        closeModal();await refreshMCData();renderMC();showToast('Flat unmatched; receipt total preserved');
       };
     }
 
