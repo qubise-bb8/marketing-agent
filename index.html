@@ -249,7 +249,7 @@
       const q=new URLSearchParams(window.location.search);
       return window.location.hash.includes('type=recovery')||q.get('type')==='recovery'||q.get('mode')==='password-reset';
     };
-    let recoveryMode=recoveryInUrl()||localStorage.getItem(RESET_FLAG)==='1';
+    let recoveryMode=recoveryInUrl();
 
     async function init(){
       hydratePremiumIcons();
@@ -257,7 +257,7 @@
       if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./sw.js'); }catch(e){} }
       supabase.auth.onAuthStateChange(async (event,s2)=>{
         if(event==='PASSWORD_RECOVERY' && s2){
-          recoveryMode=true;localStorage.setItem(RESET_FLAG,'1');showPasswordReset(s2);return;
+          recoveryMode=true;showPasswordReset(s2);return;
         }
         if(recoveryMode && s2){showPasswordReset(s2);return}
         if(s2 && (!session || s2.user.id!==session.user.id)) await enterApp(s2);
@@ -826,13 +826,13 @@
       const email=$('#authEmail').value.trim(),box=$('#authMessage');
       if(!email){box.textContent='Enter your email address first, then tap Forgot password.';box.classList.remove('hidden');$('#authEmail').focus();return}
       $('#authForgot').disabled=true;$('#authForgot').textContent='Sending reset email…';
-      localStorage.setItem(RESET_FLAG,'1');recoveryMode=true;
+      recoveryMode=false;localStorage.removeItem(RESET_FLAG);
       const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:RESET_URL});
       $('#authForgot').disabled=false;$('#authForgot').textContent='Forgot password?';box.classList.remove('hidden');
       if(error){localStorage.removeItem(RESET_FLAG);recoveryMode=false;box.textContent=error.message;return}
       box.textContent='Reset email sent. Open the email from Supabase and tap the reset link. TAAZ will open directly on the Choose a new password screen.';
     };
-    $('#authForm').onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;$('#authSubmit').disabled=true;$('#authSubmit').textContent='Please wait…';let result;if(authMode==='signin') result=await supabase.auth.signInWithPassword({email,password}); else result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:APP_URL}});$('#authSubmit').disabled=false;$('#authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';const box=$('#authMessage');box.classList.remove('hidden');if(result.error){box.textContent=result.error.message;return}if(authMode==='signup'&&!result.data.session){box.textContent='Account created. Please check your email and confirm the sign-in link, then return here.'}else box.textContent='Signed in.'};
+    $('#authForm').onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;$('#authSubmit').disabled=true;$('#authSubmit').textContent='Please wait…';let result;if(authMode==='signin'){recoveryMode=false;localStorage.removeItem(RESET_FLAG);result=await supabase.auth.signInWithPassword({email,password});} else result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:APP_URL}});$('#authSubmit').disabled=false;$('#authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';const box=$('#authMessage');box.classList.remove('hidden');if(result.error){box.textContent=result.error.message;return}if(authMode==='signup'&&!result.data.session){box.textContent='Account created. Please check your email and confirm the sign-in link, then return here.'}else box.textContent='Signed in.'};
 
     init();
   </script>
