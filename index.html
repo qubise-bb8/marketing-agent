@@ -832,7 +832,60 @@
       if(error){localStorage.removeItem(RESET_FLAG);recoveryMode=false;box.textContent=error.message;return}
       box.textContent='Reset email sent. Open the email from Supabase and tap the reset link. TAAZ will open directly on the Choose a new password screen.';
     };
-    $('#authForm').onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;$('#authSubmit').disabled=true;$('#authSubmit').textContent='Please wait…';let result;if(authMode==='signin'){recoveryMode=false;localStorage.removeItem(RESET_FLAG);result=await supabase.auth.signInWithPassword({email,password});} else result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:APP_URL}});$('#authSubmit').disabled=false;$('#authSubmit').textContent=authMode==='signin'?'Sign in':'Create account';const box=$('#authMessage');box.classList.remove('hidden');if(result.error){box.textContent=result.error.message;return}if(authMode==='signup'&&!result.data.session){box.textContent='Account created. Please check your email and confirm the sign-in link, then return here.'}else box.textContent='Signed in.'};
+    async function signInWithNetworkRetry(email,password,button,box){
+      const delays=[0,2500,3500];
+      let lastError=null;
+      for(let i=0;i<delays.length;i++){
+        if(delays[i]){button.textContent=`Reconnecting… ${i+1}/${delays.length}`;await new Promise(r=>setTimeout(r,delays[i]))}
+        try{
+          const result=await supabase.auth.signInWithPassword({email,password});
+          if(!result.error)return result;
+          lastError=result.error;
+          const msg=String(result.error.message||'');
+          if(!/failed to fetch|network|load failed/i.test(msg))return result;
+        }catch(err){
+          lastError=err;
+          if(!/failed to fetch|network|load failed/i.test(String(err?.message||err)))throw err;
+        }
+        box.classList.remove('hidden');
+        box.textContent='TAAZ backend is reconnecting. I’ll retry automatically…';
+      }
+      return {data:{session:null},error:lastError||new Error('Unable to reach TAAZ backend')};
+    }
+
+    $('#authForm').onsubmit=async e=>{
+      e.preventDefault();
+      const email=$('#authEmail').value.trim(),password=$('#authPassword').value;
+      const button=$('#authSubmit'),box=$('#authMessage');
+      button.disabled=true;button.textContent='Please wait…';box.classList.add('hidden');
+      let result;
+      try{
+        if(authMode==='signin'){
+          recoveryMode=false;localStorage.removeItem(RESET_FLAG);
+          result=await signInWithNetworkRetry(email,password,button,box);
+        }else{
+          result=await supabase.auth.signUp({email,password,options:{emailRedirectTo:APP_URL}});
+        }
+      }catch(err){
+        result={error:err,data:{session:null}};
+      }
+      button.disabled=false;button.textContent=authMode==='signin'?'Sign in':'Create account';
+      box.classList.remove('hidden');
+      if(result?.error){
+        const msg=String(result.error.message||result.error);
+        if(/failed to fetch|network|load failed|unable to reach/i.test(msg)){
+          box.innerHTML='TAAZ cannot reach the database right now. The backend is waking up after being inactive. Please wait 1–2 minutes and tap <b>Sign in</b> again. Your password has not been rejected.';
+        }else{
+          box.textContent=msg;
+        }
+        return;
+      }
+      if(authMode==='signup'&&!result.data.session){
+        box.textContent='Account created. Please check your email and confirm the sign-in link, then return here.';
+      }else{
+        box.textContent='Signed in.';
+      }
+    };
 
     init();
   </script>
